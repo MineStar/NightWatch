@@ -1,0 +1,8 @@
+.date-textfield-error {
+    -fx-background-color: #fdd,
+       linear-gradient(
+        to bottom,
+        derive(red,70%) 5%,
+        derive(red,90%) 40%
+       );
+}

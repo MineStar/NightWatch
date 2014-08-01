@@ -1,0 +1,39 @@
+.log-table:focused {
+    -fx-focus-color: transparent;
+}
+
+.log-table-cell:selected  {
+    -fx-background-color: #0096c9;
+}
+
+.log-table-cell:hover  {
+    -fx-background-color: #00bcfc;
+}    
+
+.log-table-cell-config {
+    -fx-background-color: #fff;
+}
+
+.log-table-cell-fine {
+    -fx-background-color: #efe;
+}
+
+.log-table-cell-finer {
+    -fx-background-color: #dfd;
+}
+
+.log-table-cell-finest {
+    -fx-background-color: #cfc;
+}
+
+.log-table-cell-info {
+    -fx-background-color: #bfb;
+}
+
+.log-table-cell-warning {
+    -fx-background-color: #faa;
+}
+
+.log-table-cell-severe {
+    -fx-background-color: #f99;
+}
