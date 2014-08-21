@@ -36,7 +36,6 @@ public class FilterPane extends FlowPane {
     public FilterPane() {
         super(10, 10);
         this.logFilter = new LogFilter();
-//        this.logFilter.set(logFilter);
         createGUI();
     }
 

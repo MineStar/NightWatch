@@ -1,11 +1,8 @@
 package de.minestar.nightwatch.gui;
 
 import java.awt.Desktop;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.ArrayList;
@@ -31,17 +28,22 @@ import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import de.minestar.nightwatch.core.ServerLogEntry;
+import de.minestar.nightwatch.server.LogReader;
 import de.minestar.nightwatch.server.ServerType;
 
 public class MainGUI extends Application {
 
     public static final DateTimeFormatter GERMAN_FORMAT = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM);
 
+    private TabPane serverTabPane;
     private ServerLogTab currentSelectedTab;
 
     private FilterPane filterPane;
+
+    private Stage stage;
 
     @Override
     public void start(Stage stage) throws Exception {
@@ -50,7 +52,6 @@ public class MainGUI extends Application {
         VBox tmp = new VBox(createMenuBar(), createButtonsPane(), new Separator(), filterPane);
         BorderPane bPane = new BorderPane(createTabPane(), tmp, null, null, null);
 
-        filterPane.setDateInterval(currentSelectedTab.firstDate(), currentSelectedTab.lastDate());
         filterPane.registerChangeListener((observ, oldValue, newValue) -> {
             currentSelectedTab.applyFilter(newValue);
         });
@@ -60,6 +61,7 @@ public class MainGUI extends Application {
         stage.setWidth(900);
         stage.setHeight(800);
         stage.show();
+        this.stage = stage;
     }
 
     private MenuBar createMenuBar() {
@@ -68,11 +70,15 @@ public class MainGUI extends Application {
         Menu subFileMenu = new Menu("Create Server");
         subFileMenu.getItems().addAll(createServerMenus());
 
+        MenuItem openLogMenu = new MenuItem("Open Logfile");
+        openLogMenu.setAccelerator(KeyCombination.keyCombination("CTRL+L"));
+        openLogMenu.setOnAction(e -> onOpenLogFile());
+
         MenuItem optionsMenu = new MenuItem("Options");
         optionsMenu.setAccelerator(KeyCombination.keyCombination("CTRL+O"));
         MenuItem closeMenu = new MenuItem("Exit");
         closeMenu.setAccelerator(KeyCombination.keyCombination("ALT+F4"));
-        fileMenu.getItems().addAll(subFileMenu, optionsMenu, closeMenu);
+        fileMenu.getItems().addAll(subFileMenu, openLogMenu, optionsMenu, closeMenu);
 
         Menu helpMenu = new Menu("Help");
 
@@ -83,6 +89,29 @@ public class MainGUI extends Application {
         menuBar.getMenus().addAll(fileMenu, helpMenu);
 
         return menuBar;
+
+    }
+
+    private void onOpenLogFile() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Choose log file");
+        fileChooser.setInitialDirectory(new File("."));
+        File logFile = fileChooser.showOpenDialog(stage);
+        if (logFile == null)
+            return;
+
+        try {
+            List<ServerLogEntry> logEntries = LogReader.instance().readLogFile(logFile);
+            ServerLogTab newTab = new ServerLogTab(logFile.getName(), logEntries);
+            newTab.setClosable(true);
+            serverTabPane.getTabs().add(newTab);
+            serverTabPane.getSelectionModel().select(newTab);
+
+            filterPane.setDateInterval(newTab.firstDate(), newTab.lastDate());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
     }
 
@@ -164,50 +193,14 @@ public class MainGUI extends Application {
     }
 
     private Node createTabPane() {
-        TabPane tabPane = new TabPane();
-        tabPane.setTabClosingPolicy(TabClosingPolicy.UNAVAILABLE);
+        this.serverTabPane = new TabPane();
+        serverTabPane.setTabClosingPolicy(TabClosingPolicy.UNAVAILABLE);
 
-        // TODO: Just for developing
-        ServerLogTab testTab = new ServerLogTab("Test Tab", loadData());
-
-        currentSelectedTab = testTab;
-        tabPane.getTabs().add(testTab);
-        tabPane.getSelectionModel().selectedItemProperty().addListener((observ, oldValue, newValue) -> {
-            currentSelectedTab = (ServerLogTab) newValue;
+        serverTabPane.getSelectionModel().selectedItemProperty().addListener((observ, oldValue, newValue) -> {
+            this.currentSelectedTab = (ServerLogTab) newValue;
         });
 
-        return tabPane;
-    }
-
-    // Temporary -- Just for debugging
-    private List<ServerLogEntry> loadData() {
-        DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        List<ServerLogEntry> logs = new ArrayList<>();
-
-        try (BufferedReader bReader = new BufferedReader(new FileReader("src/test/resources/big.txt"))) {
-            String line = "";
-            String time = "";
-            String log = "";
-            String level = "";
-            while ((line = bReader.readLine()) != null) {
-                time = line.substring(0, 19);
-                int index = line.indexOf(']');
-                if (index == -1) {
-                    level = "ALL";
-                    log = line.substring(20);
-                } else {
-                    level = line.substring(21, index);
-                    log = line.substring(index + 1);
-                }
-
-                if (time == null || log == null)
-                    continue;
-                logs.add(new ServerLogEntry(LocalDateTime.parse(time, df), level, log));
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return logs;
+        return serverTabPane;
     }
 
     public static void main(String[] args) {
