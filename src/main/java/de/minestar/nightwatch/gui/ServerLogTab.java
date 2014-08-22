@@ -32,13 +32,16 @@ public class ServerLogTab extends Tab {
 
     private TableView<ServerLogEntry> logTable;
     private List<ServerLogEntry> allLogs;
+    
+    private boolean hasServer;
 
     private StringProperty rowCountProperty;
     private StringProperty selectedRowCountProperty;
 
-    public ServerLogTab(String name, List<ServerLogEntry> archivedLogs) {
+    public ServerLogTab(String name, List<ServerLogEntry> archivedLogs, boolean hasServer) {
         super(name);
         this.allLogs = archivedLogs;
+        this.hasServer = hasServer;
         createContent();
     }
 
@@ -89,9 +92,9 @@ public class ServerLogTab extends Tab {
                     @Override
                     protected void updateItem(ServerLogEntry item, boolean empty) {
                         super.updateItem(item, empty);
+                        getStyleClass().removeIf(e -> e.startsWith("log-table-cell"));
+                        getStyleClass().add("log-table-cell");
                         if (!empty) {
-                            getStyleClass().removeIf(e -> e.startsWith("log-table-cell"));
-                            getStyleClass().add("log-table-cell");
                             switch (item.getLogLevel()) {
                                 case CONFIG :
                                     getStyleClass().add("log-table-cell-config");
@@ -157,7 +160,7 @@ public class ServerLogTab extends Tab {
         Label selectedRowCountText = new Label("0");
         selectedRowCountProperty = selectedRowCountText.textProperty();
 
-        statusPane.getChildren().addAll(new Label("Rows:"), rowCountText, new Label("SelectedRows:"), selectedRowCountText);
+        statusPane.getChildren().addAll(new Label("Entries:"), rowCountText, new Label("Selected:"), selectedRowCountText);
 
         return statusPane;
     }
@@ -172,7 +175,10 @@ public class ServerLogTab extends Tab {
     
     public LocalDateTime lastDate() {
         return this.allLogs.parallelStream().map(ServerLogEntry::getTime).max(LocalDateTime::compareTo).orElse(LocalDateTime.now());
-        
+    }
+    
+    public boolean hasServer () {
+        return hasServer;
     }
    
 }

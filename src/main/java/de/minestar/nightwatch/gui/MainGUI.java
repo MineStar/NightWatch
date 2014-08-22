@@ -43,13 +43,17 @@ public class MainGUI extends Application {
 
     private FilterPane filterPane;
 
+    private FlowPane buttonsPane;
+
     private Stage stage;
 
     @Override
     public void start(Stage stage) throws Exception {
 
         this.filterPane = new FilterPane();
-        VBox tmp = new VBox(createMenuBar(), createButtonsPane(), new Separator(), filterPane);
+        this.buttonsPane = createButtonsPane();
+        VBox tmp = new VBox(createMenuBar(), buttonsPane, new Separator(), filterPane);
+        this.buttonsPane.setDisable(true);
         BorderPane bPane = new BorderPane(createTabPane(), tmp, null, null, null);
 
         filterPane.registerChangeListener((observ, oldValue, newValue) -> {
@@ -102,7 +106,7 @@ public class MainGUI extends Application {
 
         try {
             List<ServerLogEntry> logEntries = LogReader.instance().readLogFile(logFile);
-            ServerLogTab newTab = new ServerLogTab(logFile.getName(), logEntries);
+            ServerLogTab newTab = new ServerLogTab(logFile.getName(), logEntries, false);
             newTab.setClosable(true);
             serverTabPane.getTabs().add(newTab);
             serverTabPane.getSelectionModel().select(newTab);
@@ -134,7 +138,7 @@ public class MainGUI extends Application {
         System.out.println("DEBUG: Create server " + type);
     }
 
-    private Node createButtonsPane() {
+    private FlowPane createButtonsPane() {
 
         FlowPane hbox = new FlowPane(20, 20);
         hbox.setAlignment(Pos.CENTER_LEFT);
@@ -198,6 +202,7 @@ public class MainGUI extends Application {
 
         serverTabPane.getSelectionModel().selectedItemProperty().addListener((observ, oldValue, newValue) -> {
             this.currentSelectedTab = (ServerLogTab) newValue;
+            this.buttonsPane.setDisable(!currentSelectedTab.hasServer());
         });
 
         return serverTabPane;
