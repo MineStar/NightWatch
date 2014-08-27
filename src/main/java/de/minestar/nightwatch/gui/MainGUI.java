@@ -213,7 +213,7 @@ public class MainGUI extends Application {
 
         serverTabPane.getSelectionModel().selectedItemProperty().addListener((observ, oldValue, newValue) -> {
             this.currentSelectedTab = (ServerLogTab) newValue;
-            this.buttonsPane.setDisable(!currentSelectedTab.hasServer());
+            this.buttonsPane.setDisable(!currentSelectedTab.getServer().isPresent());
         });
 
         return serverTabPane;

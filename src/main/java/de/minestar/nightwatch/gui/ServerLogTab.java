@@ -3,6 +3,7 @@ package de.minestar.nightwatch.gui;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -35,7 +36,7 @@ public class ServerLogTab extends Tab {
     private TableView<ServerLogEntry> logTable;
     private List<ServerLogEntry> allLogs;
 
-    private ObservedServer server;
+    private Optional<ObservedServer> server;
 
     private StringProperty rowCountProperty;
     private StringProperty selectedRowCountProperty;
@@ -43,12 +44,13 @@ public class ServerLogTab extends Tab {
     public ServerLogTab(String name, List<ServerLogEntry> archivedLogs) {
         super(name);
         this.allLogs = archivedLogs;
+        this.server = Optional.empty();
         createContent();
     }
 
     public ServerLogTab(ObservedServer server) {
         this(server.getName(), Collections.emptyList());
-        this.server = server;
+        this.server = Optional.of(server);
     }
 
     private void createContent() {
@@ -183,12 +185,9 @@ public class ServerLogTab extends Tab {
         return this.allLogs.parallelStream().map(ServerLogEntry::getTime).max(LocalDateTime::compareTo).orElse(LocalDateTime.now());
     }
 
-    public ObservedServer getServer() {
-        return server;
-    }
 
-    public boolean hasServer() {
-        return server != null;
+    public Optional<ObservedServer> getServer() {
+        return server;
     }
 
 }
