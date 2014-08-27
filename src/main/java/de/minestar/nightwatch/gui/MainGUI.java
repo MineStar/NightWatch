@@ -7,6 +7,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import javafx.application.Application;
 import javafx.collections.FXCollections;
@@ -32,6 +33,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import de.minestar.nightwatch.core.ServerLogEntry;
 import de.minestar.nightwatch.server.LogReader;
+import de.minestar.nightwatch.server.ObservedServer;
 import de.minestar.nightwatch.server.ServerType;
 
 public class MainGUI extends Application {
@@ -106,7 +108,7 @@ public class MainGUI extends Application {
 
         try {
             List<ServerLogEntry> logEntries = LogReader.instance().readLogFile(logFile);
-            ServerLogTab newTab = new ServerLogTab(logFile.getName(), logEntries, false);
+            ServerLogTab newTab = new ServerLogTab(logFile.getName(), logEntries);
             newTab.setClosable(true);
             serverTabPane.getTabs().add(newTab);
             serverTabPane.getSelectionModel().select(newTab);
@@ -135,7 +137,16 @@ public class MainGUI extends Application {
     }
 
     private void onCreateServer(ServerType type) {
-        System.out.println("DEBUG: Create server " + type);
+
+        CreateServerDialog dialog = new CreateServerDialog(stage);
+        Optional<ObservedServer> result = dialog.startDialog();
+        if (!result.isPresent())
+            return;
+
+        ObservedServer server = result.get();
+        ServerLogTab tab = new ServerLogTab(server);
+        serverTabPane.getTabs().add(tab);
+        serverTabPane.getSelectionModel().select(tab);
     }
 
     private FlowPane createButtonsPane() {

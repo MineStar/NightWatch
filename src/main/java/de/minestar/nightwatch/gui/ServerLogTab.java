@@ -1,6 +1,7 @@
 package de.minestar.nightwatch.gui;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -27,22 +28,27 @@ import javafx.scene.layout.FlowPane;
 import javafx.util.Callback;
 import de.minestar.nightwatch.core.ServerLogEntry;
 import de.minestar.nightwatch.server.LogLevel;
+import de.minestar.nightwatch.server.ObservedServer;
 
 public class ServerLogTab extends Tab {
 
     private TableView<ServerLogEntry> logTable;
     private List<ServerLogEntry> allLogs;
-    
-    private boolean hasServer;
+
+    private ObservedServer server;
 
     private StringProperty rowCountProperty;
     private StringProperty selectedRowCountProperty;
 
-    public ServerLogTab(String name, List<ServerLogEntry> archivedLogs, boolean hasServer) {
+    public ServerLogTab(String name, List<ServerLogEntry> archivedLogs) {
         super(name);
         this.allLogs = archivedLogs;
-        this.hasServer = hasServer;
         createContent();
+    }
+
+    public ServerLogTab(ObservedServer server) {
+        this(server.getName(), Collections.emptyList());
+        this.server = server;
     }
 
     private void createContent() {
@@ -121,7 +127,7 @@ public class ServerLogTab extends Tab {
                                     break;
 
                             }
-                        }else {
+                        } else {
                             getStyleClass().clear();
                         }
                     }
@@ -164,21 +170,25 @@ public class ServerLogTab extends Tab {
 
         return statusPane;
     }
-    
+
     public void applyFilter(Predicate<ServerLogEntry> predicate) {
         logTable.getItems().setAll(allLogs.stream().filter(predicate).collect(Collectors.toList()));
     }
-    
+
     public LocalDateTime firstDate() {
         return this.allLogs.parallelStream().map(ServerLogEntry::getTime).min(LocalDateTime::compareTo).orElse(LocalDateTime.now());
     }
-    
+
     public LocalDateTime lastDate() {
         return this.allLogs.parallelStream().map(ServerLogEntry::getTime).max(LocalDateTime::compareTo).orElse(LocalDateTime.now());
     }
-    
-    public boolean hasServer () {
-        return hasServer;
+
+    public ObservedServer getServer() {
+        return server;
     }
-   
+
+    public boolean hasServer() {
+        return server != null;
+    }
+
 }
