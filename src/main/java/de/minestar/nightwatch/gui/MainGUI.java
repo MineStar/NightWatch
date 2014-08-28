@@ -190,7 +190,7 @@ public class MainGUI extends Application {
 
     private void onOpenDirAction(Button openDirButton) {
         try {
-            Desktop.getDesktop().open(new File(".."));
+            Desktop.getDesktop().open(currentSelectedTab.getServer().get().getDirectory());
         } catch (IOException e) {
             e.printStackTrace();
         }
