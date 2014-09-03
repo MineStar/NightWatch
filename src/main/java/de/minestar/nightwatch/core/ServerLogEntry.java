@@ -10,6 +10,12 @@ public class ServerLogEntry {
     private final String text;
     private final LogLevel logLevel;
 
+    public ServerLogEntry(LocalDateTime time, LogLevel level, String text) {
+        this.time = time;
+        this.logLevel = level;
+        this.text = text;
+    }
+
     public ServerLogEntry(LocalDateTime time, String logLevel, String text) {
         this.time = time;
         this.logLevel = LogLevel.getByName(logLevel);

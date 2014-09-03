@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
@@ -112,9 +113,6 @@ public class MainGUI extends Application {
             newTab.setClosable(true);
             serverTabPane.getTabs().add(newTab);
             serverTabPane.getSelectionModel().select(newTab);
-
-            filterPane.setDateInterval(newTab.firstDate(), newTab.lastDate());
-
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -197,14 +195,31 @@ public class MainGUI extends Application {
     }
 
     private void onToggleStatusButton(Button button) {
-        // Switch phase
         if (button.getText().equals("Start Server")) {
+            onStartServer(button);
+
             button.setText("Stop Server");
             button.setStyle("-fx-base: #e55852");
         } else {
-            button.setText("Start Server");
-            button.setStyle("-fx-base: #68d188");
+            onStopServer();
         }
+
+    }
+
+    private void onStartServer(Button button) {
+        this.currentSelectedTab.startServer();
+        this.currentSelectedTab.getServerOverWatchThread().get().isAlive().addListener((observable, oldValue, newValue) -> {
+            if (!newValue) {
+                System.out.println("terminated");
+                Platform.runLater(() -> {
+                    button.setText("Start Server");
+                    button.setStyle("-fx-base: #68d188");
+                });
+            }
+        });
+    }
+    private void onStopServer() {
+        this.currentSelectedTab.stopServer();
     }
 
     private Node createTabPane() {
@@ -214,6 +229,7 @@ public class MainGUI extends Application {
         serverTabPane.getSelectionModel().selectedItemProperty().addListener((observ, oldValue, newValue) -> {
             this.currentSelectedTab = (ServerLogTab) newValue;
             this.buttonsPane.setDisable(!currentSelectedTab.getServer().isPresent());
+            this.filterPane.setDateInterval(currentSelectedTab.getMinDate(), currentSelectedTab.getMaxDate());
         });
 
         return serverTabPane;

@@ -1,14 +1,16 @@
 package de.minestar.nightwatch.gui;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
@@ -30,26 +32,42 @@ import javafx.util.Callback;
 import de.minestar.nightwatch.core.ServerLogEntry;
 import de.minestar.nightwatch.server.LogLevel;
 import de.minestar.nightwatch.server.ObservedServer;
+import de.minestar.nightwatch.threading.ServerOverwatchThread;
 
 public class ServerLogTab extends Tab {
 
     private TableView<ServerLogEntry> logTable;
-    private List<ServerLogEntry> allLogs;
+    private ObservableList<ServerLogEntry> allLogs;
+    private Predicate<ServerLogEntry> currentFilter;
 
     private Optional<ObservedServer> server;
+    private Optional<ServerOverwatchThread> serverOverWatchThread;
 
     private StringProperty rowCountProperty;
     private StringProperty selectedRowCountProperty;
+    private Optional<LinkedBlockingQueue<String>> commandQueue;
 
     public ServerLogTab(String name, List<ServerLogEntry> archivedLogs) {
         super(name);
-        this.allLogs = archivedLogs;
+        this.allLogs = FXCollections.observableArrayList(archivedLogs);
         this.server = Optional.empty();
+        this.serverOverWatchThread = Optional.empty();
+        this.commandQueue = Optional.empty();
+        this.currentFilter = (e -> true);
         createContent();
     }
 
     public ServerLogTab(ObservedServer server) {
-        this(server.getName(), Collections.emptyList());
+        this(server.getName(), new ArrayList<>());
+//        Comparator<ServerLogEntry> l = ;
+        this.allLogs.addListener((ListChangeListener<ServerLogEntry>) c -> {
+            while (c.next()) {
+                if (c.wasAdded()) {
+                    this.logTable.getItems().addAll(c.getAddedSubList().stream().sorted((o1, o2) -> o1.getTime().compareTo(o2.getTime())).filter(currentFilter).collect(Collectors.toList()));
+                }
+            }
+        });
+
         this.server = Optional.of(server);
     }
 
@@ -141,8 +159,8 @@ public class ServerLogTab extends Tab {
         TextField consoleInput = new TextField();
         consoleInput.getStylesheets().add(getClass().getResource("/styles/commandLine.css").toExternalForm());
         consoleInput.getStyleClass().add("command-input");
-        consoleInput.textProperty().addListener((observ, oldVal, newVal) -> {
-            // TODO: Executing
+        consoleInput.setOnAction(e -> {
+            this.commandQueue.ifPresent(l -> l.add(consoleInput.getText()));
         });
 
         logTable.getItems().addListener((ListChangeListener<ServerLogEntry>) c -> rowCountProperty.setValue(c.getList().size() + ""));
@@ -152,11 +170,6 @@ public class ServerLogTab extends Tab {
         vBox.setBottom(consoleInput);
         setContent(vBox);
     }
-
-    public ObservableList<ServerLogEntry> getLogList() {
-        return logTable.getItems();
-    }
-
     private Node createStatusPane() {
 
         FlowPane statusPane = new FlowPane(Orientation.HORIZONTAL, 10, 0);
@@ -174,20 +187,40 @@ public class ServerLogTab extends Tab {
     }
 
     public void applyFilter(Predicate<ServerLogEntry> predicate) {
+        this.currentFilter = predicate;
         logTable.getItems().setAll(allLogs.stream().filter(predicate).collect(Collectors.toList()));
     }
 
-    public LocalDateTime firstDate() {
-        return this.allLogs.parallelStream().map(ServerLogEntry::getTime).min(LocalDateTime::compareTo).orElse(LocalDateTime.now());
-    }
-
-    public LocalDateTime lastDate() {
-        return this.allLogs.parallelStream().map(ServerLogEntry::getTime).max(LocalDateTime::compareTo).orElse(LocalDateTime.now());
-    }
-
-
     public Optional<ObservedServer> getServer() {
         return server;
+    }
+
+    public Optional<ServerOverwatchThread> getServerOverWatchThread() {
+        return serverOverWatchThread;
+    }
+
+    public LocalDateTime getMinDate() {
+        return allLogs.parallelStream().map(ServerLogEntry::getTime).min(LocalDateTime::compareTo).orElse(LocalDateTime.now());
+    }
+
+    public LocalDateTime getMaxDate() {
+        return allLogs.parallelStream().map(ServerLogEntry::getTime).max(LocalDateTime::compareTo).orElse(LocalDateTime.now());
+    }
+
+    public void startServer() {
+        this.commandQueue = Optional.of(new LinkedBlockingQueue<>());
+        this.serverOverWatchThread = Optional.of(new ServerOverwatchThread(this.server.get(), allLogs, this.commandQueue.get()));
+        Thread thread = new Thread(this.serverOverWatchThread.get(), this.server.get().getName() + "_Overwatch");
+        thread.start();
+    }
+
+    public void stopServer() {
+        if (this.serverOverWatchThread.isPresent()) {
+            this.commandQueue.get().add("stop");
+//            this.serverOverWatchThread.get().cancel();
+            this.serverOverWatchThread = Optional.empty();
+            this.commandQueue = Optional.empty();
+        }
     }
 
 }
