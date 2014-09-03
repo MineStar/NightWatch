@@ -8,7 +8,7 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.concurrent.Task;
 import de.minestar.nightwatch.core.ServerLogEntry;
 import de.minestar.nightwatch.server.ObservedServer;
-import de.minestar.nightwatch.server.parser.SimpleLogEntryParser;
+import de.minestar.nightwatch.server.parser.Version1710Parser;
 
 public class ServerOverwatchThread extends Task<Void> {
 
@@ -40,8 +40,8 @@ public class ServerOverwatchThread extends Task<Void> {
 
     private void start() throws Exception {
         this.serverProcess = server.createProcess().start();
-        // TODO: Use correct log parser
-        this.logTask = new ServerLoggingTask(serverProcess.getInputStream(), logList, new SimpleLogEntryParser());
+        // TODO: User have to choose, which parser is correct
+        this.logTask = new ServerLoggingTask(serverProcess.getInputStream(), logList, new Version1710Parser());
         Thread loggingTaskThread = new Thread(logTask, this.server.getName() + "_LoggingTask");
 
         this.commandTask = new ServerCommandTask(serverProcess.getOutputStream(), commandQueue);

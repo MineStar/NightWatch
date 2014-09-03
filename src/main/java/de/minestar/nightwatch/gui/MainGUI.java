@@ -3,11 +3,16 @@ package de.minestar.nightwatch.gui;
 import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.text.ParseException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -33,9 +38,11 @@ import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import de.minestar.nightwatch.core.ServerLogEntry;
-import de.minestar.nightwatch.server.LogReader;
+import de.minestar.nightwatch.server.LogLevel;
 import de.minestar.nightwatch.server.ObservedServer;
 import de.minestar.nightwatch.server.ServerType;
+import de.minestar.nightwatch.server.parser.LogEntryParser;
+import de.minestar.nightwatch.server.parser.Version1710Parser;
 
 public class MainGUI extends Application {
 
@@ -108,7 +115,18 @@ public class MainGUI extends Application {
             return;
 
         try {
-            List<ServerLogEntry> logEntries = LogReader.instance().readLogFile(logFile);
+            List<String> allLines = Files.readAllLines(logFile.toPath());
+            LogEntryParser parser = new Version1710Parser();
+
+            List<ServerLogEntry> logEntries = allLines.stream().map((String line) -> {
+                try {
+                    return parser.parse(LocalDate.now(), line);
+                } catch (ParseException e) {
+                    return new ServerLogEntry(LocalDateTime.now(), "UNKNOWN", LogLevel.SEVERE, line);
+                }
+
+            }).collect(Collectors.toList());
+
             ServerLogTab newTab = new ServerLogTab(logFile.getName(), logEntries);
             newTab.setClosable(true);
             serverTabPane.getTabs().add(newTab);

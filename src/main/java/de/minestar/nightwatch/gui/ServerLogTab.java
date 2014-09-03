@@ -59,11 +59,10 @@ public class ServerLogTab extends Tab {
 
     public ServerLogTab(ObservedServer server) {
         this(server.getName(), new ArrayList<>());
-//        Comparator<ServerLogEntry> l = ;
         this.allLogs.addListener((ListChangeListener<ServerLogEntry>) c -> {
             while (c.next()) {
                 if (c.wasAdded()) {
-                    this.logTable.getItems().addAll(c.getAddedSubList().stream().sorted((o1, o2) -> o1.getTime().compareTo(o2.getTime())).filter(currentFilter).collect(Collectors.toList()));
+                    this.logTable.getItems().addAll(c.getAddedSubList().stream().filter(currentFilter).collect(Collectors.toList()));
                 }
             }
         });
@@ -100,6 +99,10 @@ public class ServerLogTab extends Tab {
             return property;
         });
         logTable.getColumns().add(timeColumn);
+        
+        TableColumn<ServerLogEntry, String> sourceColumn = new TableColumn<>("Source");
+        sourceColumn.setCellValueFactory(new PropertyValueFactory<>("source"));
+        logTable.getColumns().add(sourceColumn);
 
         TableColumn<ServerLogEntry, LogLevel> logLevelColumn = new TableColumn<>("LogLevel");
         logLevelColumn.setCellValueFactory(new PropertyValueFactory<>("logLevel"));
@@ -217,7 +220,6 @@ public class ServerLogTab extends Tab {
     public void stopServer() {
         if (this.serverOverWatchThread.isPresent()) {
             this.commandQueue.get().add("stop");
-//            this.serverOverWatchThread.get().cancel();
             this.serverOverWatchThread = Optional.empty();
             this.commandQueue = Optional.empty();
         }
