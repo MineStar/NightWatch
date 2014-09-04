@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.function.Predicate;
 
 import javafx.beans.InvalidationListener;
+import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -20,8 +21,8 @@ import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.FlowPane;
-import de.minestar.nightwatch.core.ServerLogEntry;
-import de.minestar.nightwatch.server.LogLevel;
+import de.minestar.nightwatch.logging.LogLevel;
+import de.minestar.nightwatch.logging.ServerLogEntry;
 
 public class FilterPane extends FlowPane {
 
@@ -85,11 +86,19 @@ public class FilterPane extends FlowPane {
 
     }
 
-    public void setDateInterval(LocalDateTime min, LocalDateTime max) {
-        this.minDate = min;
-        this.fromDateTextField.setText(min.format(MainGUI.GERMAN_FORMAT));
-        this.maxDate = max;
-        this.toDateTextField.setText(max.format(MainGUI.GERMAN_FORMAT));
+    public void bindDateInterval(ReadOnlyObjectProperty<LocalDateTime> minBinding, ReadOnlyObjectProperty<LocalDateTime> maxBinding) {
+        this.minDate = minBinding.get();
+        this.fromDateTextField.setText(minDate.format(MainGUI.GERMAN_FORMAT));
+        this.maxDate = maxBinding.get();
+        this.toDateTextField.setText(maxDate.format(MainGUI.GERMAN_FORMAT));
+        minBinding.addListener((observ, oldVal, newVal) -> {
+            this.minDate = newVal;
+            this.fromDateTextField.setText(newVal.format(MainGUI.GERMAN_FORMAT));
+        });
+        maxBinding.addListener((observ, oldVal, newVal) -> {
+            this.maxDate = newVal;
+            this.toDateTextField.setText(newVal.format(MainGUI.GERMAN_FORMAT));
+        });
     }
 
     public class LogFilter implements Predicate<ServerLogEntry>, ObservableValue<LogFilter> {

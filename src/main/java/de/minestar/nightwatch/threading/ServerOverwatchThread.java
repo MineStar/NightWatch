@@ -6,9 +6,9 @@ import java.util.concurrent.LinkedBlockingQueue;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.concurrent.Task;
-import de.minestar.nightwatch.core.ServerLogEntry;
+import de.minestar.nightwatch.logging.ServerLogEntry;
+import de.minestar.nightwatch.logging.parser.Version1710Parser;
 import de.minestar.nightwatch.server.ObservedServer;
-import de.minestar.nightwatch.server.parser.Version1710Parser;
 
 public class ServerOverwatchThread extends Task<Void> {
 

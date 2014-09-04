@@ -1,4 +1,4 @@
-package de.minestar.nightwatch.server;
+package de.minestar.nightwatch.logging;
 
 import java.util.HashMap;
 import java.util.Map;

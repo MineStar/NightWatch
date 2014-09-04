@@ -1,9 +1,9 @@
-package de.minestar.nightwatch.server.parser;
+package de.minestar.nightwatch.logging.parser;
 
 import java.text.ParseException;
 import java.time.LocalDate;
 
-import de.minestar.nightwatch.core.ServerLogEntry;
+import de.minestar.nightwatch.logging.ServerLogEntry;
 
 public interface LogEntryParser {
 

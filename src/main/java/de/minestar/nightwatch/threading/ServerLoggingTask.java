@@ -9,9 +9,9 @@ import java.util.List;
 
 import javafx.application.Platform;
 import javafx.concurrent.Task;
-import de.minestar.nightwatch.core.ServerLogEntry;
-import de.minestar.nightwatch.server.parser.LogEntryParser;
-import de.minestar.nightwatch.server.parser.SimpleLogEntryParser;
+import de.minestar.nightwatch.logging.ServerLogEntry;
+import de.minestar.nightwatch.logging.parser.LogEntryParser;
+import de.minestar.nightwatch.logging.parser.SimpleLogEntryParser;
 
 public class ServerLoggingTask extends Task<Void> {
 

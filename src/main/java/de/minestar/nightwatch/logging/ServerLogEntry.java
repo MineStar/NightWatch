@@ -1,8 +1,6 @@
-package de.minestar.nightwatch.core;
+package de.minestar.nightwatch.logging;
 
 import java.time.LocalDateTime;
-
-import de.minestar.nightwatch.server.LogLevel;
 
 public class ServerLogEntry {
 

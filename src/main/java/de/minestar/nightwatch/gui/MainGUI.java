@@ -3,16 +3,11 @@ package de.minestar.nightwatch.gui;
 import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.text.ParseException;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -38,19 +33,18 @@ import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import de.minestar.nightwatch.core.Core;
-import de.minestar.nightwatch.core.ServerLogEntry;
-import de.minestar.nightwatch.server.LogLevel;
+import de.minestar.nightwatch.logging.LogReader;
+import de.minestar.nightwatch.logging.ServerLog;
+import de.minestar.nightwatch.logging.ServerLogEntry;
 import de.minestar.nightwatch.server.ObservedServer;
 import de.minestar.nightwatch.server.ServerType;
-import de.minestar.nightwatch.server.parser.LogEntryParser;
-import de.minestar.nightwatch.server.parser.Version1710Parser;
 
 public class MainGUI extends Application {
 
     public static final DateTimeFormatter GERMAN_FORMAT = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM);
 
     private TabPane serverTabPane;
-    private ServerLogTab currentSelectedTab;
+    private LogTab currentSelectedTab;
 
     private FilterPane filterPane;
 
@@ -119,19 +113,10 @@ public class MainGUI extends Application {
             return;
 
         try {
-            List<String> allLines = Files.readAllLines(logFile.toPath());
-            LogEntryParser parser = new Version1710Parser();
+            LogReader logReader = new LogReader();
+            List<ServerLogEntry> logEntries = logReader.readLogFile(logFile);
 
-            List<ServerLogEntry> logEntries = allLines.stream().map((String line) -> {
-                try {
-                    return parser.parse(LocalDate.now(), line);
-                } catch (ParseException e) {
-                    return new ServerLogEntry(LocalDateTime.now(), "UNKNOWN", LogLevel.SEVERE, line);
-                }
-
-            }).collect(Collectors.toList());
-
-            ServerLogTab newTab = new ServerLogTab(logFile.getName(), logEntries);
+            LogTab newTab = new LogTab(logFile.getName(), new ServerLog(logEntries));
             newTab.setClosable(true);
             serverTabPane.getTabs().add(newTab);
             serverTabPane.getSelectionModel().select(newTab);
@@ -215,7 +200,7 @@ public class MainGUI extends Application {
 
     private void onOpenDirAction(Button openDirButton) {
         try {
-            Desktop.getDesktop().open(currentSelectedTab.getServer().get().getDirectory());
+            Desktop.getDesktop().open(((ServerLogTab) currentSelectedTab).getServer().getDirectory());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -234,8 +219,11 @@ public class MainGUI extends Application {
     }
 
     private void onStartServer(Button button) {
-        this.currentSelectedTab.startServer();
-        this.currentSelectedTab.getServerOverWatchThread().get().isAlive().addListener((observable, oldValue, newValue) -> {
+        if (!(this.currentSelectedTab instanceof ServerLogTab))
+            throw new RuntimeException("Starting server on non-server-logtab!");
+
+        ((ServerLogTab) this.currentSelectedTab).startServer();
+        ((ServerLogTab) this.currentSelectedTab).getServerOverWatchThread().isAlive().addListener((observable, oldValue, newValue) -> {
             if (!newValue) {
                 System.out.println("terminated");
                 Platform.runLater(() -> {
@@ -245,8 +233,11 @@ public class MainGUI extends Application {
             }
         });
     }
+
     private void onStopServer() {
-        this.currentSelectedTab.stopServer();
+        if (!(this.currentSelectedTab instanceof ServerLogTab))
+            throw new RuntimeException("Stopping server on non-server-logtab!");
+        ((ServerLogTab) this.currentSelectedTab).stopServer();
     }
 
     private Node createTabPane() {
@@ -254,9 +245,10 @@ public class MainGUI extends Application {
         serverTabPane.setTabClosingPolicy(TabClosingPolicy.UNAVAILABLE);
 
         serverTabPane.getSelectionModel().selectedItemProperty().addListener((observ, oldValue, newValue) -> {
-            this.currentSelectedTab = (ServerLogTab) newValue;
-            this.buttonsPane.setDisable(!currentSelectedTab.getServer().isPresent());
-            this.filterPane.setDateInterval(currentSelectedTab.getMinDate(), currentSelectedTab.getMaxDate());
+            this.currentSelectedTab = (LogTab) newValue;
+            // Disable the button bar, when only a log is read
+            this.buttonsPane.setDisable(!(currentSelectedTab instanceof ServerLogTab));
+            this.filterPane.bindDateInterval(currentSelectedTab.getServerlog().minDate(), currentSelectedTab.getServerlog().maxDate());
         });
 
         return serverTabPane;

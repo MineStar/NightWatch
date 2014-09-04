@@ -1,10 +1,10 @@
-package de.minestar.nightwatch.server.parser;
+package de.minestar.nightwatch.logging.parser;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-import de.minestar.nightwatch.core.ServerLogEntry;
-import de.minestar.nightwatch.server.LogLevel;
+import de.minestar.nightwatch.logging.LogLevel;
+import de.minestar.nightwatch.logging.ServerLogEntry;
 
 public class SimpleLogEntryParser implements LogEntryParser {
 

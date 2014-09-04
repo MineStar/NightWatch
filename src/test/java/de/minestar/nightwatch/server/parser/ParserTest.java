@@ -8,8 +8,10 @@ import java.time.LocalTime;
 
 import org.junit.Test;
 
-import de.minestar.nightwatch.core.ServerLogEntry;
-import de.minestar.nightwatch.server.LogLevel;
+import de.minestar.nightwatch.logging.LogLevel;
+import de.minestar.nightwatch.logging.ServerLogEntry;
+import de.minestar.nightwatch.logging.parser.LogEntryParser;
+import de.minestar.nightwatch.logging.parser.Version1710Parser;
 
 public class ParserTest {
 
