@@ -37,6 +37,7 @@ import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import de.minestar.nightwatch.core.Core;
 import de.minestar.nightwatch.core.ServerLogEntry;
 import de.minestar.nightwatch.server.LogLevel;
 import de.minestar.nightwatch.server.ObservedServer;
@@ -69,6 +70,9 @@ public class MainGUI extends Application {
         filterPane.registerChangeListener((observ, oldValue, newValue) -> {
             currentSelectedTab.applyFilter(newValue);
         });
+
+        Core.serverManager.registeredServers().values().forEach(server -> createServerTab(server));
+
         Scene scene = new Scene(bPane);
 
         stage.setScene(scene);
@@ -160,6 +164,11 @@ public class MainGUI extends Application {
             return;
 
         ObservedServer server = result.get();
+        Core.serverManager.registeredServers().put(server.getName().toLowerCase(), server);
+        createServerTab(server);
+    }
+
+    private void createServerTab(ObservedServer server) {
         ServerLogTab tab = new ServerLogTab(server);
         serverTabPane.getTabs().add(tab);
         serverTabPane.getSelectionModel().select(tab);

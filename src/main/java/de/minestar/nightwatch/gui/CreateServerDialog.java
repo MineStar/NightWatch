@@ -31,6 +31,7 @@ import org.controlsfx.validation.ValidationResult;
 import org.controlsfx.validation.ValidationSupport;
 import org.controlsfx.validation.Validator;
 
+import de.minestar.nightwatch.server.ObservedJava7Server;
 import de.minestar.nightwatch.server.ObservedServer;
 
 public class CreateServerDialog extends Dialog {
@@ -155,7 +156,7 @@ public class CreateServerDialog extends Dialog {
             if (this.java7File.isNull().get()) {
                 return Optional.of(new ObservedServer(this.serverName.get(), this.serverFile.get(), this.minMemory.get(), this.maxMemory.get()));
             } else {
-                return Optional.of(new ObservedServer(this.serverName.get(), this.serverFile.get(), this.minMemory.get(), this.maxMemory.get(), this.java7File.get(), this.permGenSize.get()));
+                return Optional.of(new ObservedJava7Server(this.serverName.get(), this.serverFile.get(), this.minMemory.get(), this.maxMemory.get(), this.java7File.get(), this.permGenSize.get()));
             }
         } else
             return Optional.empty();

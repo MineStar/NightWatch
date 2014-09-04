@@ -1,2 +1,4 @@
 server/*
 target/
+servers.json
+
