@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Optional;
 
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
@@ -225,11 +224,9 @@ public class MainGUI extends Application {
         ((ServerLogTab) this.currentSelectedTab).startServer();
         ((ServerLogTab) this.currentSelectedTab).getServerOverWatchThread().isAlive().addListener((observable, oldValue, newValue) -> {
             if (!newValue) {
-                System.out.println("terminated");
-                Platform.runLater(() -> {
-                    button.setText("Start Server");
-                    button.setStyle("-fx-base: #68d188");
-                });
+                button.setText("Start Server");
+                button.setStyle("-fx-base: #68d188");
+
             }
         });
     }

@@ -3,6 +3,7 @@ package de.minestar.nightwatch.threading;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.concurrent.Task;
@@ -33,14 +34,13 @@ public class ServerOverwatchThread extends Task<Void> {
         start();
         while (!isCancelled()) {
             overwatch();
-            Thread.sleep(1000);
+            Thread.sleep(100);
         }
         return null;
     }
 
     private void start() throws Exception {
         this.serverProcess = server.createProcess().start();
-        // TODO: User have to choose, which parser is correct
         this.logTask = new ServerLoggingTask(serverProcess.getInputStream(), logList, new Version1710Parser());
         Thread loggingTaskThread = new Thread(logTask, this.server.getName() + "_LoggingTask");
 
@@ -60,7 +60,7 @@ public class ServerOverwatchThread extends Task<Void> {
             this.logTask.cancel();
             this.commandTask.cancel();
 
-            isAlive.set(false);
+            Platform.runLater(() -> isAlive.set(false));
             this.cancel();
         }
     }

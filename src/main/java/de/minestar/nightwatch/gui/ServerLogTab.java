@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Collectors;
 
+import javafx.application.Platform;
 import javafx.collections.ListChangeListener;
 import javafx.scene.Node;
 import javafx.scene.control.TextField;
@@ -24,7 +25,9 @@ public class ServerLogTab extends LogTab {
         this.getServerlog().entries().addListener((ListChangeListener<ServerLogEntry>) c -> {
             while (c.next()) {
                 if (c.wasAdded()) {
-                    this.logTable.getItems().addAll(c.getAddedSubList().stream().filter(currentFilter).collect(Collectors.toList()));
+                    Platform.runLater(() -> {
+                        this.logTable.getItems().addAll(c.getAddedSubList().stream().filter(currentFilter).collect(Collectors.toList()));
+                    });
                 }
             }
         });
@@ -59,12 +62,12 @@ public class ServerLogTab extends LogTab {
         this.serverOverWatchThread = null;
         this.commandQueue = null;
     }
-    
+
     public ObservedServer getServer() {
         return server;
     }
 
     public ServerOverwatchThread getServerOverWatchThread() {
-        return serverOverWatchThread; 
+        return serverOverWatchThread;
     }
 }

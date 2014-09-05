@@ -52,6 +52,7 @@ public class LogTab extends Tab{
         logTable.getStylesheets().add(getClass().getResource("/styles/tableview.css").toExternalForm());
         logTable.getStyleClass().add("log-table");
         logTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        
         // Copy selected lines to clipboard
         logTable.getSelectionModel().getSelectedItems().addListener((ListChangeListener<ServerLogEntry>) c -> {
             selectedRowCountProperty.setValue(c.getList().size() + "");
@@ -66,6 +67,7 @@ public class LogTab extends Tab{
         });
 
         TableColumn<ServerLogEntry, String> timeColumn = new TableColumn<>("Time");
+        timeColumn.setSortable(false);
         timeColumn.setCellValueFactory(log -> {
             SimpleStringProperty property = new SimpleStringProperty();
             property.setValue(MainGUI.GERMAN_FORMAT.format(log.getValue().getTime()));
@@ -74,14 +76,17 @@ public class LogTab extends Tab{
         logTable.getColumns().add(timeColumn);
         
         TableColumn<ServerLogEntry, String> sourceColumn = new TableColumn<>("Source");
+        sourceColumn.setSortable(false);
         sourceColumn.setCellValueFactory(new PropertyValueFactory<>("source"));
         logTable.getColumns().add(sourceColumn);
 
         TableColumn<ServerLogEntry, LogLevel> logLevelColumn = new TableColumn<>("LogLevel");
+        logLevelColumn.setSortable(false);
         logLevelColumn.setCellValueFactory(new PropertyValueFactory<>("logLevel"));
         logTable.getColumns().add(logLevelColumn);
 
         TableColumn<ServerLogEntry, String> textColumn = new TableColumn<>("Text");
+        textColumn.setSortable(false);
         textColumn.setCellValueFactory(new PropertyValueFactory<>("text"));
         logTable.getColumns().add(textColumn);
 
