@@ -31,6 +31,7 @@ import org.controlsfx.validation.ValidationResult;
 import org.controlsfx.validation.ValidationSupport;
 import org.controlsfx.validation.Validator;
 
+import de.minestar.nightwatch.core.Core;
 import de.minestar.nightwatch.server.ObservedJava7Server;
 import de.minestar.nightwatch.server.ObservedServer;
 
@@ -40,7 +41,6 @@ public class CreateServerDialog extends Dialog {
     private ObjectProperty<File> serverFile = new SimpleObjectProperty<>();
     private StringProperty minMemory = new SimpleStringProperty();
     private StringProperty maxMemory = new SimpleStringProperty();
-    private ObjectProperty<File> java7File = new SimpleObjectProperty<>();
     private StringProperty permGenSize = new SimpleStringProperty();
 
     private ValidationSupport val;
@@ -93,17 +93,16 @@ public class CreateServerDialog extends Dialog {
 
         CheckBox isJava7Box = new CheckBox("Java7");
         isJava7Box.selectedProperty().addListener((observ, oldVal, newVal) -> {
-            if (newVal) {
+            // If checkbox is activated and the java7 path never set -> open
+            // dialog
+            if (newVal && Core.mainConfig.java7Path().isEmpty().get()) {
                 FileChooser fileChooser = new FileChooser();
                 fileChooser.setTitle("Select Java7 binary");
                 File f = fileChooser.showOpenDialog(getWindow());
                 if (f == null) {
                     return;
                 }
-                pathTextField.setText(f.getAbsolutePath());
-                this.java7File.set(f);
-            } else {
-                this.java7File.set(null);
+                Core.mainConfig.java7Path().set(f.getAbsolutePath());
             }
         });
         pane.addRow(row++, new Label("Java7"), isJava7Box, createToolTipNode("Use Java7 instead Java8. Forge has problems with Java8"));
@@ -153,10 +152,10 @@ public class CreateServerDialog extends Dialog {
 
         Action action = show();
         if (action == Actions.OK) {
-            if (this.java7File.isNull().get()) {
+            if (this.permGenSize.isEmpty().get()) {
                 return Optional.of(new ObservedServer(this.serverName.get(), this.serverFile.get(), this.minMemory.get(), this.maxMemory.get()));
             } else {
-                return Optional.of(new ObservedJava7Server(this.serverName.get(), this.serverFile.get(), this.minMemory.get(), this.maxMemory.get(), this.java7File.get(), this.permGenSize.get()));
+                return Optional.of(new ObservedJava7Server(this.serverName.get(), this.serverFile.get(), this.minMemory.get(), this.maxMemory.get(), this.permGenSize.get()));
             }
         } else
             return Optional.empty();

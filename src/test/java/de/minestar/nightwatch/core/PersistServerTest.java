@@ -20,7 +20,7 @@ public class PersistServerTest {
         File tmpFile = new File("serverjsontest.json");
         ServerManager manager = new ServerManager(tmpFile);
         manager.registeredServers().put("java8server", new ObservedServer("Java8Server", new File("path/to/server"), "1024MB", "2G"));
-        manager.registeredServers().put("java7server", new ObservedJava7Server("Java7Server", new File("path/to/other/server/"), "2G", "4G", new File("path/to/java7/binary"), "256MB"));
+        manager.registeredServers().put("java7server", new ObservedJava7Server("Java7Server", new File("path/to/other/server/"), "2G", "4G", "256MB"));
 
         manager = new ServerManager(tmpFile);
         ObservableMap<String, ObservedServer> registeredServers = manager.registeredServers();
@@ -38,7 +38,6 @@ public class PersistServerTest {
         Assert.assertEquals(new File("path/to/other/server").getAbsolutePath(), observedServerTwo.getServerFile().getAbsolutePath());
         Assert.assertEquals("2G", observedServerTwo.getMinMemory());
         Assert.assertEquals("4G", observedServerTwo.getMaxMemory());
-        Assert.assertEquals(new File("path/to/java7/binary").getAbsolutePath(), ((ObservedJava7Server) observedServerTwo).getJava7File().getAbsolutePath());
         Assert.assertEquals("256MB", ((ObservedJava7Server) observedServerTwo).getPermGenSize());
         tmpFile.delete();
 
