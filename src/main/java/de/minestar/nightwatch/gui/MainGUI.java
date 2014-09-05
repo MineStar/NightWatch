@@ -10,15 +10,14 @@ import java.util.List;
 import java.util.Optional;
 
 import javafx.application.Application;
-import javafx.collections.FXCollections;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.ChoiceBox;
-import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
@@ -29,14 +28,20 @@ import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.VBox;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+
+import org.controlsfx.dialog.DialogStyle;
+import org.controlsfx.dialog.Dialogs;
+
 import de.minestar.nightwatch.core.Core;
 import de.minestar.nightwatch.logging.LogReader;
 import de.minestar.nightwatch.logging.ServerLog;
 import de.minestar.nightwatch.logging.ServerLogEntry;
 import de.minestar.nightwatch.server.ObservedServer;
 import de.minestar.nightwatch.server.ServerType;
+import de.minestar.nightwatch.threading.BackupTask;
 
 public class MainGUI extends Application {
 
@@ -50,6 +55,8 @@ public class MainGUI extends Application {
     private FlowPane buttonsPane;
 
     private Stage stage;
+
+    private BooleanProperty disableBackupProperty = new SimpleBooleanProperty(false);
 
     @Override
     public void start(Stage stage) throws Exception {
@@ -174,28 +181,45 @@ public class MainGUI extends Application {
         openDirButton.setPrefWidth(100);
 
         Button startBackupButton = new Button("Create backup");
+        startBackupButton.disableProperty().bind(disableBackupProperty);
         startBackupButton.setOnAction(e -> onStartBackup(startBackupButton));
         startBackupButton.setPrefWidth(100);
-        Button restoreBackupButton = new Button("Restore backup");
-        restoreBackupButton.setOnAction(e -> onRestoreBackup(startBackupButton));
-        restoreBackupButton.setPrefWidth(100);
 
-        Label choiceViewLabel = new Label("Show: ");
-        ChoiceBox<String> choiceView = new ChoiceBox<String>(FXCollections.observableArrayList("Console", "Statistics"));
-        choiceView.getSelectionModel().select(0);
+        // TODO: Implement them at another release
+//        Button restoreBackupButton = new Button("Restore backup");
+//        restoreBackupButton.setOnAction(e -> onRestoreBackup(startBackupButton));
+//        restoreBackupButton.setPrefWidth(100);
 
-        hbox.getChildren().addAll(toggleStatusButton, new Separator(Orientation.VERTICAL), openDirButton, new Separator(Orientation.VERTICAL), startBackupButton, restoreBackupButton, new Separator(Orientation.VERTICAL), choiceViewLabel, choiceView);
+//        Label choiceViewLabel = new Label("Show: ");
+//        ChoiceBox<String> choiceView = new ChoiceBox<String>(FXCollections.observableArrayList("Console", "Statistics"));
+//        choiceView.getSelectionModel().select(0);
 
+//        hbox.getChildren().addAll(toggleStatusButton, new Separator(Orientation.VERTICAL), openDirButton, new Separator(Orientation.VERTICAL), startBackupButton, restoreBackupButton, new Separator(Orientation.VERTICAL), choiceViewLabel, choiceView);
+        hbox.getChildren().addAll(toggleStatusButton, new Separator(Orientation.VERTICAL), openDirButton, new Separator(Orientation.VERTICAL), startBackupButton);
         return hbox;
     }
 
-    private void onRestoreBackup(Button startBackupButton) {
-        // TODO: Implement backup
+    private void onStartBackup(Button startBackupButton) {
+        Dialogs.create().style(DialogStyle.NATIVE).message("Please select a directory to place the backup!").showInformation();
+        DirectoryChooser dirChooser = new DirectoryChooser();
+
+        dirChooser.setInitialDirectory(new File("."));
+        File backupDir = dirChooser.showDialog(stage);
+        if (backupDir == null) {
+            return;
+        }
+        BackupTask backupTask = new BackupTask(((ServerLogTab) this.currentSelectedTab).getServer(), backupDir);
+        Thread backupThread = new Thread(backupTask, "BackupThread");
+        Dialogs.create().style(DialogStyle.NATIVE).showWorkerProgress(backupTask);
+        backupTask.exceptionProperty().addListener((observ, oldVal, newVal) -> Dialogs.create().style(DialogStyle.NATIVE).message("An error occured!\n" + newVal.toString()).showError());
+        backupThread.start();
+        Dialogs.create().style(DialogStyle.NATIVE).message("Backup created!").showInformation();
+
     }
 
-    private void onStartBackup(Button startBackupButton) {
-        // TODO: Implement backup
-    }
+//    private void onRestoreBackup(Button startBackupButton) {
+//        // TODO: Implement backup
+//    }
 
     private void onOpenDirAction(Button openDirButton) {
         try {
@@ -222,11 +246,12 @@ public class MainGUI extends Application {
             throw new RuntimeException("Starting server on non-server-logtab!");
 
         ((ServerLogTab) this.currentSelectedTab).startServer();
+        disableBackupProperty.set(true);
         ((ServerLogTab) this.currentSelectedTab).getServerOverWatchThread().isAlive().addListener((observable, oldValue, newValue) -> {
             if (!newValue) {
                 button.setText("Start Server");
                 button.setStyle("-fx-base: #68d188");
-
+                disableBackupProperty.set(false);
             }
         });
     }
