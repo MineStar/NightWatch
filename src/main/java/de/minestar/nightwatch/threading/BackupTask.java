@@ -28,18 +28,24 @@ public class BackupTask extends Task<Void> {
 
         File source = server.getDirectory();
 
-        updateMessage("Counting files");
+        updateMessage("Count Files");
         updateProgress(0, 1);
+
         int filesCount = FileCountVisitor.count(source);
+        updateMessage("Files to proceed: " + filesCount);
         updateProgress(1, filesCount);
         updateMessage("Start backup");
         IntegerProperty procededFiles = new SimpleIntegerProperty();
-        procededFiles.addListener((observ, oldVal, newVal) -> updateProgress(procededFiles.get(), filesCount));
+        procededFiles.addListener((observ, oldVal, newVal) -> {
+            updateProgress(procededFiles.get(), filesCount);
+            updateMessage("Backup file " + procededFiles.get() + " of " + filesCount);
+        });
 
         String timestampString = LocalDateTime.now().format(BACKUP_TIME_FORMAT);
         File targetFile = new File(backupDirectory, server.getName() + "_" + timestampString + ".zip");
         ZipFileVisitor.zipDirWithProgress(source, targetFile, procededFiles);
-
+        updateMessage("Backup complete");
+        
         return null;
     }
 

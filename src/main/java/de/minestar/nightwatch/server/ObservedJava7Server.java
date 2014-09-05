@@ -13,11 +13,10 @@ public class ObservedJava7Server extends ObservedServer {
         // For serialization
     }
 
-    public ObservedJava7Server(String name, File serverFile, String minMemory, String maxMemory, String permGenSize) {
-        super(name, serverFile, minMemory, maxMemory);
+    public ObservedJava7Server(String name, File serverFile, String minMemory, String maxMemory, boolean automaticBackups, String permGenSize) {
+        super(name, serverFile, minMemory, maxMemory, automaticBackups);
         this.permGenSize = permGenSize;
     }
-
 
     public String getPermGenSize() {
         return permGenSize;

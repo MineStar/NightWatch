@@ -58,4 +58,10 @@ public class Configuration {
         return java7Path;
     }
 
+    private SimpleStringProperty backupFolder = new SimpleStringProperty();
+
+    @JsonGetter
+    public SimpleStringProperty backupFolder() {
+        return backupFolder;
+    }
 }

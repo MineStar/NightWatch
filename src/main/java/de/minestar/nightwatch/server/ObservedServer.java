@@ -5,10 +5,11 @@ import java.lang.ProcessBuilder.Redirect;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
-@JsonTypeInfo(use=Id.CLASS, include=As.PROPERTY, property="class")
+@JsonTypeInfo(use = Id.CLASS, include = As.PROPERTY, property = "class")
 public class ObservedServer {
 
     private String name;
@@ -17,22 +18,23 @@ public class ObservedServer {
 
     private File directory;
     private File serverFile;
-    
+    private boolean doAutomaticBackups;
+
     protected ObservedServer() {
         // For serialization
     }
 
-    public ObservedServer(String name, File serverFile, String minMemory, String maxMemory) {
+    public ObservedServer(String name, File serverFile, String minMemory, String maxMemory, boolean automaticBackups) {
         this.name = name;
         this.serverFile = serverFile;
         this.directory = serverFile.getParentFile();
         this.minMemory = minMemory;
         this.maxMemory = maxMemory;
+        this.doAutomaticBackups = automaticBackups;
     }
 
     public ProcessBuilder createProcess() throws Exception {
 
-        
         List<String> commands = new ArrayList<>();
         buildCommands(commands);
         ProcessBuilder pBuilder = new ProcessBuilder(commands);
@@ -72,9 +74,14 @@ public class ObservedServer {
         return serverFile;
     }
 
+    @JsonGetter
+    public boolean doAutomaticBackups() {
+        return doAutomaticBackups;
+    }
+
     @Override
     public String toString() {
-        return "ObservedServer [name=" + name + ", minMemory=" + minMemory + ", maxMemory=" + maxMemory + ", directory=" + directory + ", serverFile=" + serverFile + "]";
+        return "ObservedServer [name=" + name + ", minMemory=" + minMemory + ", maxMemory=" + maxMemory + ", directory=" + directory + ", serverFile=" + serverFile + ", doAutomaticBackups=" + doAutomaticBackups + "]";
     }
 
 }

@@ -32,6 +32,8 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
+import org.controlsfx.control.action.Action;
+import org.controlsfx.dialog.Dialog;
 import org.controlsfx.dialog.DialogStyle;
 import org.controlsfx.dialog.Dialogs;
 
@@ -200,21 +202,31 @@ public class MainGUI extends Application {
     }
 
     private void onStartBackup(Button startBackupButton) {
-        Dialogs.create().style(DialogStyle.NATIVE).message("Please select a directory to place the backup!").showInformation();
-        DirectoryChooser dirChooser = new DirectoryChooser();
 
-        dirChooser.setInitialDirectory(new File("."));
-        File backupDir = dirChooser.showDialog(stage);
-        if (backupDir == null) {
-            return;
+        if (Core.mainConfig.backupFolder().isEmpty().get()) {
+
+            Action result = Dialogs.create().style(DialogStyle.NATIVE).message("You haven't select a backup folder yet. Please select one!").showConfirm();
+            System.out.println(result);
+            if (result != Dialog.Actions.YES)
+                return;
+            
+            DirectoryChooser dirChooser = new DirectoryChooser();
+            dirChooser.setInitialDirectory(new File("."));
+            File backupDir = dirChooser.showDialog(stage);
+            if (backupDir != null) {
+                Core.mainConfig.backupFolder().set(backupDir.getAbsolutePath());
+            }
         }
-        BackupTask backupTask = new BackupTask(((ServerLogTab) this.currentSelectedTab).getServer(), backupDir);
+
+        BackupTask backupTask = new BackupTask(((ServerLogTab) this.currentSelectedTab).getServer(), new File(Core.mainConfig.backupFolder().get()));
+        startBackup(backupTask);
+
+    }
+    private void startBackup(BackupTask backupTask) {
         Thread backupThread = new Thread(backupTask, "BackupThread");
         Dialogs.create().style(DialogStyle.NATIVE).showWorkerProgress(backupTask);
-        backupTask.exceptionProperty().addListener((observ, oldVal, newVal) -> Dialogs.create().style(DialogStyle.NATIVE).message("An error occured!\n" + newVal.toString()).showError());
+        backupTask.exceptionProperty().addListener((observ, oldVal, newVal) -> Dialogs.create().style(DialogStyle.NATIVE).message("Error while creating backup!").showException(newVal));
         backupThread.start();
-        Dialogs.create().style(DialogStyle.NATIVE).message("Backup created!").showInformation();
-
     }
 
 //    private void onRestoreBackup(Button startBackupButton) {
@@ -245,13 +257,18 @@ public class MainGUI extends Application {
         if (!(this.currentSelectedTab instanceof ServerLogTab))
             throw new RuntimeException("Starting server on non-server-logtab!");
 
-        ((ServerLogTab) this.currentSelectedTab).startServer();
+        ServerLogTab serverLogTab = ((ServerLogTab) this.currentSelectedTab);
+        serverLogTab.startServer();
         disableBackupProperty.set(true);
-        ((ServerLogTab) this.currentSelectedTab).getServerOverWatchThread().isAlive().addListener((observable, oldValue, newValue) -> {
+        serverLogTab.getServerOverWatchThread().isAlive().addListener((observable, oldValue, newValue) -> {
             if (!newValue) {
                 button.setText("Start Server");
                 button.setStyle("-fx-base: #68d188");
                 disableBackupProperty.set(false);
+                if (serverLogTab.getServer().doAutomaticBackups()) {
+                    BackupTask backupTask = new BackupTask(serverLogTab.getServer(), new File(Core.mainConfig.backupFolder().get()));
+                    this.startBackup(backupTask);
+                }
             }
         });
     }

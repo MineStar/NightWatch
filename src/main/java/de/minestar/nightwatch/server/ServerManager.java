@@ -27,7 +27,7 @@ public class ServerManager {
 
     private ObservableMap<String, ObservedServer> loadServers(File file) {
         ObservableMap<String, ObservedServer> result = FXCollections.observableHashMap();
-        if (!file.exists()) {
+        if (!file.exists() || file.length() == 0L) {
             return result;
         }
 
