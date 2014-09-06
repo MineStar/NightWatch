@@ -7,6 +7,13 @@ import java.time.format.DateTimeFormatter;
 import de.minestar.nightwatch.logging.LogLevel;
 import de.minestar.nightwatch.logging.ServerLogEntry;
 
+/**
+ * Parse cauldron for 1.6 logs printing on the console<br>
+ * The format is: <code>23:48:24 [LogLevel] {[Source]} Message</code>
+ * 
+ * @author Meldanor
+ *
+ */
 public class Cauldron16ConsoleOutputParser extends LogEntryParser {
 
     private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ISO_TIME;
