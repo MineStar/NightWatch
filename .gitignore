@@ -3,3 +3,4 @@ target/
 servers.json
 mainConfig.json
 backups/*
+dependency-reduced-pom.xml
