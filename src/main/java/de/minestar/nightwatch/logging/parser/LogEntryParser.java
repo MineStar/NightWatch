@@ -1,11 +1,22 @@
 package de.minestar.nightwatch.logging.parser;
 
-import java.text.ParseException;
 import java.time.LocalDate;
+import java.util.regex.Pattern;
 
 import de.minestar.nightwatch.logging.ServerLogEntry;
 
-public interface LogEntryParser {
+public abstract class LogEntryParser {
 
-    public ServerLogEntry parse(LocalDate date, String line) throws ParseException;
+    private Pattern acceptedFormat;
+
+    protected LogEntryParser(String acceptedFormatRegex) {
+        this.acceptedFormat = Pattern.compile(acceptedFormatRegex);
+    }
+
+    public boolean accepts(String line) {
+        return acceptedFormat.matcher(line).matches();
+    }
+
+    public abstract ServerLogEntry parse(LocalDate day, String line);
+
 }

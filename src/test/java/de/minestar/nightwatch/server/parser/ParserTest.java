@@ -1,22 +1,26 @@
 package de.minestar.nightwatch.server.parser;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
-import java.text.ParseException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 import org.junit.Test;
 
 import de.minestar.nightwatch.logging.LogLevel;
 import de.minestar.nightwatch.logging.ServerLogEntry;
+import de.minestar.nightwatch.logging.parser.Cauldron17ConsoleOutputParser;
+import de.minestar.nightwatch.logging.parser.Forge16Parser;
 import de.minestar.nightwatch.logging.parser.LogEntryParser;
 import de.minestar.nightwatch.logging.parser.Version1710Parser;
 
 public class ParserTest {
 
     @Test
-    public void version17WithoutErrors() throws Exception {
+    public void version17WithoutErrors() {
         LogEntryParser parser = new Version1710Parser();
         LocalDate today = LocalDate.now();
 
@@ -49,17 +53,48 @@ public class ParserTest {
         assertEquals("", entry.getText());
     }
 
-    @Test(expected = ParseException.class)
-    public void version17InvalidFormat() throws Exception {
-        new Version1710Parser().parse(LocalDate.now(), "2014-07-21 20:43:48 [Information] [ForgeModLoader] Forge Mod Loader version 6.4.49.965 for Minecraft 1.6.4 loading");
+    @Test
+    public void version17InvalidFormat() {
+        assertFalse(new Version1710Parser().accepts("2014-07-21 20:43:48 [Information] [ForgeModLoader] Forge Mod Loader version 6.4.49.965 for Minecraft 1.6.4 loading"));
     }
 
-    @Test(expected = ParseException.class)
-    public void version17WithException() throws Exception {
+    @Test
+    public void testForge16Parser() {
+        LogEntryParser parser = new Forge16Parser();
 
-        LogEntryParser parser = new Version1710Parser();
-        parser.parse(LocalDate.now(),"");
+        ServerLogEntry entry = parser.parse(LocalDate.now(), "2014-08-26 21:02:42 [INFO] Starting minecraft server version 1.6.4");
+        LocalDateTime timeStamp = LocalDateTime.of(2014, 8, 26, 21, 02, 42);
+        assertEquals(timeStamp, entry.getTime());
+        assertEquals("Starting minecraft server version 1.6.4", entry.getText());
+        assertEquals(LogLevel.INFO, entry.getLogLevel());
+        assertEquals("Unknown", entry.getSource());
 
+        entry = parser.parse(LocalDate.now(), "2014-08-26 21:03:19 [INFO] [Universal Electricity] Injected universalelectricity.core.asm.template.item.TemplateTEItem API into: resonantinduction/electrical/battery/ItemBlockBattery");
+        timeStamp = LocalDateTime.of(2014, 8, 26, 21, 03, 19);
+        assertEquals(timeStamp, entry.getTime());
+        assertEquals("Injected universalelectricity.core.asm.template.item.TemplateTEItem API into: resonantinduction/electrical/battery/ItemBlockBattery", entry.getText());
+        assertEquals(LogLevel.INFO, entry.getLogLevel());
+        assertEquals("Universal Electricity", entry.getSource());
     }
 
+    @Test
+    public void testCauldronConsoleParser() {
+        LogEntryParser parser = new Cauldron17ConsoleOutputParser();
+
+        assertTrue(parser.accepts("[23:48:23 INFO]: Generating keypair"));
+
+        ServerLogEntry entry = parser.parse(LocalDate.now(), "[23:48:23 INFO]: Generating keypair");
+        LocalTime time = LocalTime.of(23, 48, 23);
+        assertEquals(time.atDate(LocalDate.now()), entry.getTime());
+        assertEquals("Generating keypair", entry.getText());
+        assertEquals(LogLevel.INFO, entry.getLogLevel());
+        assertEquals("Unknown", entry.getSource());
+
+        entry = parser.parse(LocalDate.now(), "[23:48:23 WARN]: Offendor: org/spigotmc/RestartCommand.restart()V");
+        time = LocalTime.of(23, 48, 23);
+        assertEquals(time.atDate(LocalDate.now()), entry.getTime());
+        assertEquals("Offendor: org/spigotmc/RestartCommand.restart()V", entry.getText());
+        assertEquals(LogLevel.WARNING, entry.getLogLevel());
+        assertEquals("Unknown", entry.getSource());
+    }
 }

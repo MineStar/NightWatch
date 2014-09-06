@@ -1,6 +1,5 @@
 package de.minestar.nightwatch.logging.parser;
 
-import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -10,7 +9,15 @@ import java.util.regex.Pattern;
 import de.minestar.nightwatch.logging.LogLevel;
 import de.minestar.nightwatch.logging.ServerLogEntry;
 
-public class Version1710Parser implements LogEntryParser {
+/**
+ * Parse 1.7 minecraft logs. <br>
+ * The format is:
+ * <code>HH:mm:ss [Source/LogLevel]: Message</code>
+ * 
+ * @author Meldanor
+ *
+ */
+public class Version1710Parser extends LogEntryParser {
 
     private static final int TIME_POSITION = 1;
     private static final int SOURCE_LOGLEVEL_POSITION = 3;
@@ -18,18 +25,15 @@ public class Version1710Parser implements LogEntryParser {
 
     private DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ISO_LOCAL_TIME;
 
+    public Version1710Parser() {
+        super("\\[\\d{2}:\\d{2}:\\d{2}] \\[.+\\/.+\\]: .*");
+    }
+    
     // Splitpattern. Regex = [\[\]] - split at brackets
     private Pattern SPLIT_PATTERN = Pattern.compile("[\\[\\]]");
 
-    private Pattern FORMAT_PATTERN = Pattern.compile("\\[\\d\\d:\\d\\d:\\d\\d\\] \\[[\\w\\s#!\"§$%&()=?]+\\/[\\w\\s#!\"§$%&()=?]+\\]:.*");
-
     @Override
-    public ServerLogEntry parse(LocalDate date, String line) throws ParseException {
-        if (line.isEmpty()) {
-            throw new ParseException("String is empty", 0);
-        }
-        if (!FORMAT_PATTERN.matcher(line).matches())
-            throw new ParseException("Invalid format to parse!", 0);
+    public ServerLogEntry parse(LocalDate date, String line)  {
 
         String[] split = SPLIT_PATTERN.split(line, 5);
         String timeString = split[TIME_POSITION];

@@ -9,7 +9,6 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.concurrent.Task;
 import de.minestar.nightwatch.core.Core;
 import de.minestar.nightwatch.logging.ServerLogEntry;
-import de.minestar.nightwatch.logging.parser.Version1710Parser;
 import de.minestar.nightwatch.server.ObservedServer;
 
 public class ServerOverwatchThread extends Task<Void> {
@@ -42,7 +41,7 @@ public class ServerOverwatchThread extends Task<Void> {
 
     private void start() throws Exception {
         this.serverProcess = server.createProcess().start();
-        this.logTask = new ServerLoggingTask(serverProcess.getInputStream(), logList, new Version1710Parser());
+        this.logTask = new ServerLoggingTask(serverProcess.getInputStream(), logList);
         Thread loggingTaskThread = new Thread(logTask, this.server.getName() + "_LoggingTask");
 
         this.commandTask = new ServerCommandTask(serverProcess.getOutputStream(), commandQueue);
