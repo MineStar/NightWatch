@@ -41,6 +41,7 @@ public class ObservedServer {
         pBuilder.directory(directory);
         pBuilder.redirectOutput(Redirect.PIPE);
         pBuilder.redirectInput(Redirect.PIPE);
+        pBuilder.redirectErrorStream(true);
         return pBuilder;
     }
 
