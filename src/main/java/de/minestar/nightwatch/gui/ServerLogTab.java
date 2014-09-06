@@ -8,6 +8,13 @@ import javafx.application.Platform;
 import javafx.collections.ListChangeListener;
 import javafx.scene.Node;
 import javafx.scene.control.TextField;
+
+import org.controlsfx.control.action.Action;
+import org.controlsfx.dialog.Dialog;
+import org.controlsfx.dialog.DialogStyle;
+import org.controlsfx.dialog.Dialogs;
+
+import de.minestar.nightwatch.core.Core;
 import de.minestar.nightwatch.logging.LogLevel;
 import de.minestar.nightwatch.logging.ServerLog;
 import de.minestar.nightwatch.logging.ServerLogEntry;
@@ -33,6 +40,16 @@ public class ServerLogTab extends LogTab {
         });
 
         this.server = server;
+
+        this.setOnCloseRequest(e -> {
+            Dialogs builder = Dialogs.create().style(DialogStyle.NATIVE);
+            builder = builder.message("Do you want to stop controlling the server " + server.getName() + " ?");
+            Action result = builder.showConfirm();
+            if (result != Dialog.Actions.YES) {
+            } else {
+                Core.serverManager.registeredServers().remove(server.getName().toLowerCase());
+            }
+        });
     }
 
     @Override

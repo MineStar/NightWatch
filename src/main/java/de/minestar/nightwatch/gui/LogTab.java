@@ -40,6 +40,7 @@ public class LogTab extends Tab{
         this.currentFilter = (e -> true);
         createContent();
         this.logTable.getItems().addAll(serverLog.entries());
+        this.setClosable(true);
     }
 
 

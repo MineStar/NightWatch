@@ -23,7 +23,6 @@ import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.Separator;
 import javafx.scene.control.TabPane;
-import javafx.scene.control.TabPane.TabClosingPolicy;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
@@ -209,7 +208,7 @@ public class MainGUI extends Application {
             System.out.println(result);
             if (result != Dialog.Actions.YES)
                 return;
-            
+
             DirectoryChooser dirChooser = new DirectoryChooser();
             dirChooser.setInitialDirectory(new File("."));
             File backupDir = dirChooser.showDialog(stage);
@@ -257,7 +256,12 @@ public class MainGUI extends Application {
         if (!(this.currentSelectedTab instanceof ServerLogTab))
             throw new RuntimeException("Starting server on non-server-logtab!");
 
+        Action result = Dialogs.create().style(DialogStyle.NATIVE).message("Starting server?").showConfirm();
+        if (result != Dialog.Actions.YES)
+            return;
+
         ServerLogTab serverLogTab = ((ServerLogTab) this.currentSelectedTab);
+        serverLogTab.setClosable(false);
         serverLogTab.startServer();
         disableBackupProperty.set(true);
         serverLogTab.getServerOverWatchThread().isAlive().addListener((observable, oldValue, newValue) -> {
@@ -269,6 +273,8 @@ public class MainGUI extends Application {
                     BackupTask backupTask = new BackupTask(serverLogTab.getServer(), new File(Core.mainConfig.backupFolder().get()));
                     this.startBackup(backupTask);
                 }
+                serverLogTab.setClosable(true);
+
             }
         });
     }
@@ -276,12 +282,16 @@ public class MainGUI extends Application {
     private void onStopServer() {
         if (!(this.currentSelectedTab instanceof ServerLogTab))
             throw new RuntimeException("Stopping server on non-server-logtab!");
+
+        Action result = Dialogs.create().style(DialogStyle.NATIVE).message("Shutdown the Server?").showConfirm();
+        if (result != Dialog.Actions.YES)
+            return;
+
         ((ServerLogTab) this.currentSelectedTab).stopServer();
     }
 
     private Node createTabPane() {
         this.serverTabPane = new TabPane();
-        serverTabPane.setTabClosingPolicy(TabClosingPolicy.UNAVAILABLE);
 
         serverTabPane.getSelectionModel().selectedItemProperty().addListener((observ, oldValue, newValue) -> {
             this.currentSelectedTab = (LogTab) newValue;
@@ -292,9 +302,4 @@ public class MainGUI extends Application {
 
         return serverTabPane;
     }
-
-    public static void main(String[] args) {
-        launch(args);
-    }
-
 }
