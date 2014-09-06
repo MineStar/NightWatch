@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.IOException;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -42,7 +41,6 @@ import de.minestar.nightwatch.logging.LogReader;
 import de.minestar.nightwatch.logging.ServerLog;
 import de.minestar.nightwatch.logging.ServerLogEntry;
 import de.minestar.nightwatch.server.ObservedServer;
-import de.minestar.nightwatch.server.ServerType;
 import de.minestar.nightwatch.threading.BackupTask;
 
 public class MainGUI extends Application {
@@ -69,15 +67,30 @@ public class MainGUI extends Application {
         this.buttonsPane.setDisable(true);
         BorderPane bPane = new BorderPane(createTabPane(), tmp, null, null, null);
 
-        filterPane.registerChangeListener((observ, oldValue, newValue) -> {
-            currentSelectedTab.applyFilter(newValue);
-        });
+        filterPane.registerChangeListener((observ, oldValue, newValue) -> currentSelectedTab.applyFilter(newValue));
 
-        Core.serverManager.registeredServers().values().forEach(server -> createServerTab(server));
+        if (Core.serverManager.registeredServers().isEmpty())
+            filterPane.setDisable(true);
+        else
+            Core.serverManager.registeredServers().values().forEach(server -> createServerTab(server));
 
         Scene scene = new Scene(bPane);
 
         stage.getIcons().add(new Image(getClass().getResourceAsStream("/icons/minestar_logo_32.png")));
+        stage.setOnCloseRequest(e -> {
+            // Prevent closing server manager while one or more server are
+            // running
+            if (Core.runningServers > 0) {
+                Dialogs.create().style(DialogStyle.NATIVE).message("Can't close program while servers are running!").showWarning();
+                e.consume();
+
+            } else {
+                // Ask if the user really want to close the server
+                Action result = Dialogs.create().style(DialogStyle.NATIVE).message("Exit program?").showConfirm();
+                if (result != Dialog.Actions.YES)
+                    e.consume();
+            }
+        });
         stage.setScene(scene);
         stage.setWidth(900);
         stage.setHeight(800);
@@ -88,8 +101,9 @@ public class MainGUI extends Application {
     private MenuBar createMenuBar() {
         MenuBar menuBar = new MenuBar();
         Menu fileMenu = new Menu("File");
-        Menu subFileMenu = new Menu("Create Server");
-        subFileMenu.getItems().addAll(createServerMenus());
+        MenuItem createServerMenu = new MenuItem("Create Server");
+        createServerMenu.setOnAction(e -> onCreateServer());
+        createServerMenu.setAccelerator(KeyCombination.keyCombination("CTRL+N"));
 
         MenuItem openLogMenu = new MenuItem("Open Logfile");
         openLogMenu.setAccelerator(KeyCombination.keyCombination("CTRL+L"));
@@ -99,7 +113,7 @@ public class MainGUI extends Application {
         optionsMenu.setAccelerator(KeyCombination.keyCombination("CTRL+O"));
         MenuItem closeMenu = new MenuItem("Exit");
         closeMenu.setAccelerator(KeyCombination.keyCombination("ALT+F4"));
-        fileMenu.getItems().addAll(subFileMenu, openLogMenu, optionsMenu, closeMenu);
+        fileMenu.getItems().addAll(createServerMenu, openLogMenu, optionsMenu, closeMenu);
 
         Menu helpMenu = new Menu("Help");
 
@@ -135,22 +149,7 @@ public class MainGUI extends Application {
 
     }
 
-    private List<MenuItem> createServerMenus() {
-        List<MenuItem> menus = new ArrayList<>();
-
-        ServerType[] serverTypes = ServerType.values();
-        for (int i = 0; i < serverTypes.length; i++) {
-            ServerType serverType = serverTypes[i];
-            MenuItem createServerMenu = new MenuItem(serverType.getName());
-            createServerMenu.setAccelerator(KeyCombination.keyCombination("CTRL+" + (i + 1)));
-            createServerMenu.setOnAction(e -> onCreateServer(serverType));
-            menus.add(createServerMenu);
-        }
-
-        return menus;
-    }
-
-    private void onCreateServer(ServerType type) {
+    private void onCreateServer() {
 
         CreateServerDialog dialog = new CreateServerDialog(stage);
         Optional<ObservedServer> result = dialog.startDialog();
@@ -296,9 +295,14 @@ public class MainGUI extends Application {
         this.serverTabPane = new TabPane();
 
         serverTabPane.getSelectionModel().selectedItemProperty().addListener((observ, oldValue, newValue) -> {
+            this.buttonsPane.setDisable(!(newValue instanceof ServerLogTab));
+            this.filterPane.setDisable(newValue == null);
+
+            if (newValue == null) {
+                return;
+            }
             this.currentSelectedTab = (LogTab) newValue;
             // Disable the button bar, when only a log is read
-            this.buttonsPane.setDisable(!(currentSelectedTab instanceof ServerLogTab));
             this.filterPane.bindDateInterval(currentSelectedTab.getServerlog().minDate(), currentSelectedTab.getServerlog().maxDate());
         });
 

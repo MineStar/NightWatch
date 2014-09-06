@@ -7,6 +7,7 @@ import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.concurrent.Task;
+import de.minestar.nightwatch.core.Core;
 import de.minestar.nightwatch.logging.ServerLogEntry;
 import de.minestar.nightwatch.logging.parser.Version1710Parser;
 import de.minestar.nightwatch.server.ObservedServer;
@@ -50,6 +51,7 @@ public class ServerOverwatchThread extends Task<Void> {
         loggingTaskThread.start();
         commandTaskThread.start();
 
+        Core.runningServers = Core.runningServers + 1;
         this.isAlive.set(true);
     }
 
@@ -61,6 +63,7 @@ public class ServerOverwatchThread extends Task<Void> {
             this.commandTask.cancel();
 
             Platform.runLater(() -> isAlive.set(false));
+            Core.runningServers = Core.runningServers - 1;
             this.cancel();
         }
     }

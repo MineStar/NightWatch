@@ -24,6 +24,8 @@ public class Core {
 
     private static final File MAIN_CONFIG_FILE = new File("mainConfig.json");
     public static Configuration mainConfig;
+    
+    public static int runningServers = 0;
 
     static {
         serverManager = new ServerManager(SERVER_LIST_FILE);
