@@ -23,6 +23,7 @@ import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.Separator;
 import javafx.scene.control.TabPane;
+import javafx.scene.image.Image;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
@@ -76,6 +77,7 @@ public class MainGUI extends Application {
 
         Scene scene = new Scene(bPane);
 
+        stage.getIcons().add(new Image(getClass().getResourceAsStream("/icons/minestar_logo_32.png")));
         stage.setScene(scene);
         stage.setWidth(900);
         stage.setHeight(800);
