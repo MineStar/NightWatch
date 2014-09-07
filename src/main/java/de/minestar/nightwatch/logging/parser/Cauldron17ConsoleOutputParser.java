@@ -8,8 +8,8 @@ import de.minestar.nightwatch.logging.LogLevel;
 import de.minestar.nightwatch.logging.ServerLogEntry;
 
 /**
- * Parse cauldron logs printing on the console<br>
- * The format is: <code>[23:48:24] [LogLevel] {[Source]}: Message</code>
+ * Parse cauldron for 1.7 logs printing on the console<br>
+ * The format is: <code>[23:48:24] [LogLevel]: Message</code>
  * 
  * @author Meldanor
  *

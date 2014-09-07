@@ -27,8 +27,8 @@ public class PersistServerTest {
 
         File tmpFile = tmpFolder.newFile();
         ServerManager manager = new ServerManager(tmpFile);
-        manager.registeredServers().put("java8server", new ObservedServer("Java8Server", new File("path/to/server"), "1024MB", "2G", true));
-        manager.registeredServers().put("java7server", new ObservedJava7Server("Java7Server", new File("path/to/other/server/"), "2G", "4G", false, "256MB"));
+        manager.registeredServers().put("java8server", new ObservedServer("Java8Server", new File("path/to/server"), "1024MB", "2G", true, false));
+        manager.registeredServers().put("java7server", new ObservedJava7Server("Java7Server", new File("path/to/other/server/"), "2G", "4G", false, true, "256MB"));
 
         manager = new ServerManager(tmpFile);
         ObservableMap<String, ObservedServer> registeredServers = manager.registeredServers();
@@ -40,6 +40,7 @@ public class PersistServerTest {
         assertEquals("1024MB", observedServerOne.getMinMemory());
         assertEquals("2G", observedServerOne.getMaxMemory());
         assertTrue(observedServerOne.doAutomaticBackups());
+        assertFalse(observedServerOne.doAutoRestarts());
 
         ObservedServer observedServerTwo = registeredServers.get("java7server");
         assertTrue("not an instance of ObseredJava7Server", observedServerTwo instanceof ObservedJava7Server);
@@ -49,5 +50,6 @@ public class PersistServerTest {
         assertEquals("4G", observedServerTwo.getMaxMemory());
         assertEquals("256MB", ((ObservedJava7Server) observedServerTwo).getPermGenSize());
         assertFalse(observedServerTwo.doAutomaticBackups());
+        assertTrue(observedServerTwo.doAutoRestarts());
     }
 }

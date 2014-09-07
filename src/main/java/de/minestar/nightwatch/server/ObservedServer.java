@@ -19,18 +19,20 @@ public class ObservedServer {
     private File directory;
     private File serverFile;
     private boolean doAutomaticBackups;
+    private boolean doAutoRestarts;
 
     protected ObservedServer() {
         // For serialization
     }
 
-    public ObservedServer(String name, File serverFile, String minMemory, String maxMemory, boolean automaticBackups) {
+    public ObservedServer(String name, File serverFile, String minMemory, String maxMemory, boolean automaticBackups, boolean doAutoRestarts) {
         this.name = name;
         this.serverFile = serverFile;
         this.directory = serverFile.getParentFile();
         this.minMemory = minMemory;
         this.maxMemory = maxMemory;
         this.doAutomaticBackups = automaticBackups;
+        this.doAutoRestarts = doAutoRestarts;
     }
 
     public ProcessBuilder createProcess() throws Exception {
@@ -80,9 +82,14 @@ public class ObservedServer {
         return doAutomaticBackups;
     }
 
+    @JsonGetter
+    public boolean doAutoRestarts() {
+        return doAutoRestarts;
+    }
+
     @Override
     public String toString() {
-        return "ObservedServer [name=" + name + ", minMemory=" + minMemory + ", maxMemory=" + maxMemory + ", directory=" + directory + ", serverFile=" + serverFile + ", doAutomaticBackups=" + doAutomaticBackups + "]";
+        return "ObservedServer [name=" + name + ", minMemory=" + minMemory + ", maxMemory=" + maxMemory + ", directory=" + directory + ", serverFile=" + serverFile + ", doAutomaticBackups=" + doAutomaticBackups + ", doAutoRestarts=" + doAutoRestarts + "]";
     }
 
 }

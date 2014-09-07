@@ -261,23 +261,49 @@ public class MainGUI extends Application {
         if (result != Dialog.Actions.YES)
             return;
 
-        ServerLogTab serverLogTab = ((ServerLogTab) this.currentSelectedTab);
+        startServer((ServerLogTab) this.currentSelectedTab);
+    }
+
+    private void startServer(ServerLogTab serverLogTab) {
         serverLogTab.setClosable(false);
         serverLogTab.startServer();
         disableBackupProperty.set(true);
         serverLogTab.getServerOverWatchThread().isAlive().addListener((observable, oldValue, newValue) -> {
             if (!newValue) {
-                button.setText("Start Server");
-                button.setStyle("-fx-base: #68d188");
                 disableBackupProperty.set(false);
-                if (serverLogTab.getServer().doAutomaticBackups()) {
-                    BackupTask backupTask = new BackupTask(serverLogTab.getServer(), new File(Core.mainConfig.backupFolder().get()));
+                ObservedServer server = serverLogTab.getServer();
+                if (server.doAutomaticBackups()) {
+                    BackupTask backupTask = new BackupTask(server, new File(Core.mainConfig.backupFolder().get()));
+                    // wait for backup task has ended to initiate eventual
+                    // restart
+                    backupTask.setOnSucceeded(e -> {
+                        if (server.doAutoRestarts()) {
+                            initiateRestart(serverLogTab);
+                        }
+                    });
                     this.startBackup(backupTask);
+                } else if (server.doAutoRestarts()) {
+                    initiateRestart(serverLogTab);
+
                 }
                 serverLogTab.setClosable(true);
 
             }
         });
+    }
+
+    private void initiateRestart(ServerLogTab serverLogTab) {
+
+        RestartDialog di = new RestartDialog(stage);
+        Action show = di.show();
+        if (show == Dialog.Actions.OK) {
+            startServer(serverLogTab);
+            // do restart
+        } else if (show == Dialog.Actions.CANCEL) {
+            // Do no restart
+            return;
+
+        }
     }
 
     private void onStopServer() {

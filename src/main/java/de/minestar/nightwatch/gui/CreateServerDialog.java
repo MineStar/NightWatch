@@ -45,6 +45,7 @@ public class CreateServerDialog extends Dialog {
     private StringProperty maxMemory = new SimpleStringProperty();
     private StringProperty permGenSize = new SimpleStringProperty();
     private BooleanProperty autoBackup = new SimpleBooleanProperty();
+    private BooleanProperty autoRestart = new SimpleBooleanProperty();
 
     private ValidationSupport val;
 
@@ -94,7 +95,7 @@ public class CreateServerDialog extends Dialog {
         ComboBox<String> maxMemoryBox = createMemoryComboBox(maxMemory, val);
         pane.addRow(row++, new Label("MaxMemory"), maxMemoryBox, createToolTipNode("Amount of memeory the server can use until extensive garbage collection"));
 
-        CheckBox isJava7Box = new CheckBox("Java7");
+        CheckBox isJava7Box = new CheckBox();
         isJava7Box.selectedProperty().addListener((observ, oldVal, newVal) -> {
             // If checkbox is activated and the java7 path never set -> open
             // dialog
@@ -117,9 +118,13 @@ public class CreateServerDialog extends Dialog {
         this.permGenSize.bind(permGenSizeBox.valueProperty());
         pane.addRow(row++, new Label("PermGenSize"), permGenSizeBox, createToolTipNode("The more mods are used the higher this parameter should be."));
 
-        CheckBox doAutomaticBackups = new CheckBox("Auto-Backup");
+        CheckBox doAutomaticBackups = new CheckBox();
         autoBackup.bind(doAutomaticBackups.selectedProperty());
         pane.addRow(row++, new Label("Auto-Backup"), doAutomaticBackups, createToolTipNode("Create automatic backups of the server. Currently this happens at servers shutdown"));
+
+        CheckBox doAutomaticRestarts = new CheckBox();
+        autoRestart.bind(doAutomaticRestarts.selectedProperty());
+        pane.addRow(row++, new Label("Auto-Restart"), doAutomaticRestarts, createToolTipNode("Automatically restarts the server after shutdown. Do not restart if the button shutdown is pressed"));
 
         Actions.OK.disabledProperty().bind(val.invalidProperty());
 
@@ -160,9 +165,9 @@ public class CreateServerDialog extends Dialog {
         Action action = show();
         if (action == Actions.OK) {
             if (this.permGenSize.isEmpty().get()) {
-                return Optional.of(new ObservedServer(this.serverName.get(), this.serverFile.get(), this.minMemory.get(), this.maxMemory.get(), this.autoBackup.get()));
+                return Optional.of(new ObservedServer(this.serverName.get(), this.serverFile.get(), this.minMemory.get(), this.maxMemory.get(), this.autoBackup.get(), this.autoRestart.get()));
             } else {
-                return Optional.of(new ObservedJava7Server(this.serverName.get(), this.serverFile.get(), this.minMemory.get(), this.maxMemory.get(), this.autoBackup.get(), this.permGenSize.get()));
+                return Optional.of(new ObservedJava7Server(this.serverName.get(), this.serverFile.get(), this.minMemory.get(), this.maxMemory.get(), this.autoBackup.get(), this.autoRestart.get(), this.permGenSize.get()));
             }
         } else
             return Optional.empty();
