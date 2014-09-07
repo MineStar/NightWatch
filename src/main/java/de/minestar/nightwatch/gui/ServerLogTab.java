@@ -21,70 +21,111 @@ import de.minestar.nightwatch.logging.ServerLogEntry;
 import de.minestar.nightwatch.server.ObservedServer;
 import de.minestar.nightwatch.threading.ServerOverwatchThread;
 
+@SuppressWarnings("restriction")
 public class ServerLogTab extends LogTab {
 
-    private ObservedServer server;
-    private ServerOverwatchThread serverOverWatchThread;
-    private LinkedBlockingQueue<String> commandQueue;
+	private ObservedServer server;
+	private ServerOverwatchThread serverOverWatchThread;
+	private LinkedBlockingQueue<String> commandQueue;
 
-    public ServerLogTab(ObservedServer server) {
-        super(server.getName(), new ServerLog());
-        this.getServerlog().entries().addListener((ListChangeListener<ServerLogEntry>) c -> {
-            while (c.next()) {
-                if (c.wasAdded()) {
-                    Platform.runLater(() -> {
-                        this.logTable.getItems().addAll(c.getAddedSubList().stream().filter(currentFilter).collect(Collectors.toList()));
-                    });
-                }
-            }
-        });
+	public ServerLogTab(ObservedServer server) {
+		super(server.getName(), new ServerLog());
+		this.getServerlog()
+				.entries()
+				.addListener(
+						(ListChangeListener<ServerLogEntry>) c -> {
+							while (c.next()) {
+								if (c.wasAdded()) {
+									Platform.runLater(() -> {
+										this.logTable
+												.getItems()
+												.addAll(c
+														.getAddedSubList()
+														.stream()
+														.filter(currentFilter)
+														.collect(
+																Collectors
+																		.toList()));
+									});
+								}
+							}
+						});
 
-        this.server = server;
+		this.server = server;
 
-        this.setOnCloseRequest(e -> {
-            Dialogs builder = Dialogs.create().style(DialogStyle.NATIVE);
-            builder = builder.message("Do you want to stop controlling the server " + server.getName() + " ?");
-            Action result = builder.showConfirm();
-            if (result != Dialog.Actions.YES) {
-            } else {
-                Core.serverManager.registeredServers().remove(server.getName().toLowerCase());
-            }
-        });
-    }
+		this.setOnSelectionChanged(e -> {
+			ServerLogTab tab = (ServerLogTab) e.getSource();
+			if (tab != null && tab.isSelected()) {
+				if (this.serverOverWatchThread != null) {
+					// start server
+					MainGUI.INSTANCE.toggleStatusButton.setText("Stop Server");
+					MainGUI.INSTANCE.toggleStatusButton
+							.setStyle("-fx-base: #e55852");
+				} else {
+					// stop server
+					MainGUI.INSTANCE.toggleStatusButton.setText("Start Server");
+					MainGUI.INSTANCE.toggleStatusButton
+							.setStyle("-fx-base: #68d188");
+				}
+			}
 
-    @Override
-    protected Node createBottom() {
+		});
 
-        TextField consoleInput = new TextField();
-        consoleInput.getStylesheets().add(getClass().getResource("/styles/commandLine.css").toExternalForm());
-        consoleInput.getStyleClass().add("command-input");
-        consoleInput.setOnAction(e -> {
-            this.commandQueue.add(consoleInput.getText());
-            this.serverlog.entries().add(new ServerLogEntry(LocalDateTime.now(), "Console", LogLevel.ALL, consoleInput.getText()));
-            consoleInput.clear();
-        });
+		this.setOnCloseRequest(e -> {
+			Dialogs builder = Dialogs.create().style(DialogStyle.NATIVE);
+			builder = builder
+					.message("Do you want to stop controlling the server "
+							+ server.getName() + " ?");
+			Action result = builder.showConfirm();
+			if (result != Dialog.Actions.YES) {
+			} else {
+				Core.serverManager.registeredServers().remove(
+						server.getName().toLowerCase());
+			}
+		});
+	}
 
-        return consoleInput;
-    }
+	@Override
+	protected Node createBottom() {
 
-    public void startServer() {
-        this.commandQueue = new LinkedBlockingQueue<>();
-        this.serverOverWatchThread = new ServerOverwatchThread(this.server, this.serverlog.entries(), this.commandQueue);
-        Thread thread = new Thread(this.serverOverWatchThread, this.server.getName() + "_Overwatch");
-        thread.start();
-    }
+		TextField consoleInput = new TextField();
+		consoleInput.getStylesheets().add(
+				getClass().getResource("/styles/commandLine.css")
+						.toExternalForm());
+		consoleInput.getStyleClass().add("command-input");
+		consoleInput.setOnAction(e -> {
+			this.commandQueue.add(consoleInput.getText());
+			this.serverlog.entries().add(
+					new ServerLogEntry(LocalDateTime.now(), "Console",
+							LogLevel.ALL, consoleInput.getText()));
+			consoleInput.clear();
+		});
 
-    public void stopServer() {
-        this.commandQueue.add("stop");
-        this.serverOverWatchThread = null;
-        this.commandQueue = null;
-    }
+		return consoleInput;
+	}
 
-    public ObservedServer getServer() {
-        return server;
-    }
+	public void startServer() {
+		this.commandQueue = new LinkedBlockingQueue<>();
+		this.serverOverWatchThread = new ServerOverwatchThread(this.server,
+				this.serverlog.entries(), this.commandQueue);
+		Thread thread = new Thread(this.serverOverWatchThread,
+				this.server.getName() + "_Overwatch");
+		thread.start();
+	}
 
-    public ServerOverwatchThread getServerOverWatchThread() {
-        return serverOverWatchThread;
-    }
+	public void stopServer() {
+		if (this.commandQueue != null) {
+			this.commandQueue.add("stop");
+			this.serverOverWatchThread = null;
+			this.commandQueue = null;
+		}
+	}
+
+	public ObservedServer getServer() {
+		return server;
+	}
+
+	public ServerOverwatchThread getServerOverWatchThread() {
+		return serverOverWatchThread;
+	}
 }

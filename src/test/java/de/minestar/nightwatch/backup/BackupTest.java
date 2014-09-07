@@ -19,34 +19,35 @@ import de.minestar.nightwatch.util.ZipFileVisitor;
 
 public class BackupTest {
 
-    @Test
-    public void testFileCounter() throws Exception {
+	@Test
+	public void testFileCounter() throws Exception {
 
-        int count = FileCountVisitor.count(new File(""));
-        assertTrue(count > 1);
-    }
+		int count = FileCountVisitor.count(new File(""));
+		assertTrue(count > 1);
+	}
 
-    @Rule
-    public TemporaryFolder temponaryFolder = new TemporaryFolder();
+	@Rule
+	public TemporaryFolder temponaryFolder = new TemporaryFolder();
 
-    @Test
-    public void backupTest() throws Exception {
+	@Test
+	public void backupTest() throws Exception {
 
-        File targetFile = temponaryFolder.newFile();
-        assertEquals(0L, targetFile.length());
-        IntegerProperty progress = new SimpleIntegerProperty();
-        progress.addListener((observ, oldVal, newVal) -> {
-            // check if progress increments
-            assertTrue((oldVal.intValue() + 1) == newVal.intValue());
-        });
-        ZipFileVisitor.zipDirWithProgress(new File(""), targetFile, progress);
-        assertTrue(targetFile.length() > 0L);
-    }
+		File targetFile = temponaryFolder.newFile();
+		assertEquals(0L, targetFile.length());
+		IntegerProperty progress = new SimpleIntegerProperty();
+		progress.addListener((observ, oldVal, newVal) -> {
+			// check if progress increments
+			assertTrue((oldVal.intValue() + 1) == newVal.intValue());
+		});
+		ZipFileVisitor.zipDirWithProgress(new File(""), targetFile, progress);
+		assertTrue(targetFile.length() > 0L);
+	}
 
-    @Test
-    public void dateFormatTest() throws Exception {
-        LocalDateTime testDate = LocalDateTime.of(2014, 9, 5, 23, 8, 49);
-        assertEquals("05.09.2014_23.08.49", testDate.format(BackupTask.BACKUP_TIME_FORMAT));
-    }
+	@Test
+	public void dateFormatTest() throws Exception {
+		LocalDateTime testDate = LocalDateTime.of(2014, 9, 5, 23, 8, 49);
+		assertEquals("05.09.2014_23.08.49",
+				testDate.format(BackupTask.BACKUP_TIME_FORMAT));
+	}
 
 }
