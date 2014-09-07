@@ -30,8 +30,9 @@ public enum LogLevel {
 
     public static LogLevel getByName(String name) {
         LogLevel l = mapByName.get(name.toLowerCase());
-        if (l == null)
-            System.out.println(name);
+        if (l == null) {
+            return LogLevel.ALL;
+        }
         return l;
     }
 }
