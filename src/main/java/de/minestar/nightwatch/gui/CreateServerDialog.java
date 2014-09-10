@@ -43,6 +43,7 @@ public class CreateServerDialog extends Dialog {
     private ObjectProperty<File> serverFile = new SimpleObjectProperty<>();
     private StringProperty minMemory = new SimpleStringProperty();
     private StringProperty maxMemory = new SimpleStringProperty();
+    private BooleanProperty isJava7 = new SimpleBooleanProperty();
     private StringProperty permGenSize = new SimpleStringProperty();
     private BooleanProperty autoBackup = new SimpleBooleanProperty();
     private BooleanProperty autoRestart = new SimpleBooleanProperty();
@@ -109,6 +110,8 @@ public class CreateServerDialog extends Dialog {
                 Core.mainConfig.java7Path().set(f.getAbsolutePath());
             }
         });
+        isJava7.bind(isJava7Box.selectedProperty());
+
         pane.addRow(row++, new Label("Java7"), isJava7Box, createToolTipNode("Use Java7 instead Java8. Forge has problems with Java8"));
 
         ComboBox<String> permGenSizeBox = new ComboBox<>(FXCollections.observableArrayList("128M", "256M", "512M"));
@@ -164,7 +167,7 @@ public class CreateServerDialog extends Dialog {
 
         Action action = show();
         if (action == Actions.OK) {
-            if (this.permGenSize.isEmpty().get()) {
+            if (this.isJava7.not().get()) {
                 return Optional.of(new ObservedServer(this.serverName.get(), this.serverFile.get(), this.minMemory.get(), this.maxMemory.get(), this.autoBackup.get(), this.autoRestart.get()));
             } else {
                 return Optional.of(new ObservedJava7Server(this.serverName.get(), this.serverFile.get(), this.minMemory.get(), this.maxMemory.get(), this.autoBackup.get(), this.autoRestart.get(), this.permGenSize.get()));

@@ -28,7 +28,6 @@ public class RestartDialog extends Dialog {
 
     public RestartDialog(Stage stage) {
         super(stage, "Restarting server", false, DialogStyle.NATIVE);
-        System.out.println(stage);
         this.setClosable(false);
         this.wasCanceled = new SimpleBooleanProperty(false);
         setContent(createContent());
