@@ -13,39 +13,38 @@ import de.minestar.nightwatch.logging.parser.IntelligentParser;
 
 public class ServerLoggingTask extends Task<Void> {
 
-	private BufferedReader reader;
-	private List<ServerLogEntry> entryList;
+    private BufferedReader reader;
+    private List<ServerLogEntry> entryList;
 
-	private IntelligentParser parser;
+    private IntelligentParser parser;
 
-	public ServerLoggingTask(InputStream serverOutput,
-			List<ServerLogEntry> entries) {
-		this.reader = new BufferedReader(new InputStreamReader(serverOutput));
-		this.entryList = entries;
-		this.parser = new IntelligentParser();
-	}
+    public ServerLoggingTask(InputStream serverOutput, List<ServerLogEntry> entries) {
+        this.reader = new BufferedReader(new InputStreamReader(serverOutput));
+        this.entryList = entries;
+        this.parser = new IntelligentParser();
+    }
 
-	@Override
-	protected Void call() throws Exception {
-		while (!isCancelled()) {
-			String readLine = this.reader.readLine();
-			if (readLine == null)
-				break;
-			Platform.runLater(() -> {
-				entryList.add(parser.parse(LocalDate.now(), readLine));
-			});
+    @Override
+    protected Void call() throws Exception {
+        while (!isCancelled()) {
+            String readLine = this.reader.readLine();
+            if (readLine == null)
+                break;
+            Platform.runLater(() -> {
+                entryList.add(parser.parse(LocalDate.now(), readLine));
+            });
 
-		}
-		return null;
-	}
+        }
+        return null;
+    }
 
-	@Override
-	protected void cancelled() {
-		try {
-			this.reader.close();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
+    @Override
+    protected void cancelled() {
+        try {
+            this.reader.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
 }

@@ -7,16 +7,16 @@ import de.minestar.nightwatch.logging.ServerLogEntry;
 
 public abstract class LogEntryParser {
 
-	private Pattern acceptedFormat;
+    private Pattern acceptedFormat;
 
-	protected LogEntryParser(String acceptedFormatRegex) {
-		this.acceptedFormat = Pattern.compile(acceptedFormatRegex);
-	}
+    protected LogEntryParser(String acceptedFormatRegex) {
+        this.acceptedFormat = Pattern.compile(acceptedFormatRegex);
+    }
 
-	public boolean accepts(String line) {
-		return acceptedFormat.matcher(line).matches();
-	}
+    public boolean accepts(String line) {
+        return acceptedFormat.matcher(line).matches();
+    }
 
-	public abstract ServerLogEntry parse(LocalDate day, String line);
+    public abstract ServerLogEntry parse(LocalDate day, String line);
 
 }

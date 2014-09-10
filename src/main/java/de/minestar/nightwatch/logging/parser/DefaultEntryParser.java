@@ -14,14 +14,13 @@ import de.minestar.nightwatch.logging.ServerLogEntry;
  */
 public class DefaultEntryParser extends LogEntryParser {
 
-	public DefaultEntryParser() {
-		super("[\\s\\S]*");
-	}
+    public DefaultEntryParser() {
+        super("[\\s\\S]*");
+    }
 
-	@Override
-	public ServerLogEntry parse(LocalDate day, String line) {
-		return new ServerLogEntry(day.atTime(LocalTime.now()), "Unknown",
-				LogLevel.ALL, line);
-	}
+    @Override
+    public ServerLogEntry parse(LocalDate day, String line) {
+        return new ServerLogEntry(day.atTime(LocalTime.now()), "Unknown", LogLevel.ALL, line);
+    }
 
 }

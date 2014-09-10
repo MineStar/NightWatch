@@ -7,29 +7,26 @@ import de.minestar.nightwatch.core.Core;
 
 public class ObservedJava7Server extends ObservedServer {
 
-	private String permGenSize;
+    private String permGenSize;
 
-	protected ObservedJava7Server() {
-		// For serialization
-	}
+    protected ObservedJava7Server() {
+        // For serialization
+    }
 
-	public ObservedJava7Server(String name, File serverFile, String minMemory,
-			String maxMemory, boolean automaticBackups, boolean doAutoRestarts,
-			String permGenSize) {
-		super(name, serverFile, minMemory, maxMemory, automaticBackups,
-				doAutoRestarts);
-		this.permGenSize = permGenSize;
-	}
+    public ObservedJava7Server(String name, File serverFile, String minMemory, String maxMemory, boolean automaticBackups, boolean doAutoRestarts, String permGenSize) {
+        super(name, serverFile, minMemory, maxMemory, automaticBackups, doAutoRestarts);
+        this.permGenSize = permGenSize;
+    }
 
-	public String getPermGenSize() {
-		return permGenSize;
-	}
+    public String getPermGenSize() {
+        return permGenSize;
+    }
 
-	@Override
-	protected void buildCommands(List<String> processCommands) {
-		super.buildCommands(processCommands);
-		processCommands.set(0, Core.mainConfig.java7Path().get());
-		processCommands.add(1, "-XX:MaxPermSize=" + getPermGenSize());
-	}
+    @Override
+    protected void buildCommands(List<String> processCommands) {
+        super.buildCommands(processCommands);
+        processCommands.set(0, Core.mainConfig.java7Path().get());
+        processCommands.add(1, "-XX:MaxPermSize=" + getPermGenSize());
+    }
 
 }

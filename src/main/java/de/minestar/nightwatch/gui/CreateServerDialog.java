@@ -39,176 +39,138 @@ import de.minestar.nightwatch.server.ObservedServer;
 
 public class CreateServerDialog extends Dialog {
 
-	private StringProperty serverName = new SimpleStringProperty();
-	private ObjectProperty<File> serverFile = new SimpleObjectProperty<>();
-	private StringProperty minMemory = new SimpleStringProperty();
-	private StringProperty maxMemory = new SimpleStringProperty();
-	private StringProperty permGenSize = new SimpleStringProperty();
-	private BooleanProperty autoBackup = new SimpleBooleanProperty();
-	private BooleanProperty autoRestart = new SimpleBooleanProperty();
+    private StringProperty serverName = new SimpleStringProperty();
+    private ObjectProperty<File> serverFile = new SimpleObjectProperty<>();
+    private StringProperty minMemory = new SimpleStringProperty();
+    private StringProperty maxMemory = new SimpleStringProperty();
+    private StringProperty permGenSize = new SimpleStringProperty();
+    private BooleanProperty autoBackup = new SimpleBooleanProperty();
+    private BooleanProperty autoRestart = new SimpleBooleanProperty();
 
-	private ValidationSupport val;
+    private ValidationSupport val;
 
-	public CreateServerDialog(Stage stage) {
-		super(stage, "Create Server", false, DialogStyle.NATIVE);
-		val = new ValidationSupport();
-		setClosable(true);
-		getActions().addAll(Dialog.Actions.OK, Dialog.Actions.CANCEL);
-		setContent(createContent());
-	}
+    public CreateServerDialog(Stage stage) {
+        super(stage, "Create Server", false, DialogStyle.NATIVE);
+        val = new ValidationSupport();
+        setClosable(true);
+        getActions().addAll(Dialog.Actions.OK, Dialog.Actions.CANCEL);
+        setContent(createContent());
+    }
 
-	private Node createContent() {
-		GridPane pane = new GridPane();
-		pane.setPrefHeight(200);
-		pane.setPrefWidth(500);
-		pane.setVgap(10);
-		pane.setHgap(20);
+    private Node createContent() {
+        GridPane pane = new GridPane();
+        pane.setPrefHeight(200);
+        pane.setPrefWidth(500);
+        pane.setVgap(10);
+        pane.setHgap(20);
 
-		int row = 0;
+        int row = 0;
 
-		TextField serverNameField = new TextField();
-		serverNameField.setEditable(true);
-		this.serverName.bind(serverNameField.textProperty());
-		val.registerValidator(serverNameField,
-				Validator.createEmptyValidator("Must specify a server name!"));
-		pane.addRow(row++, new Label("Name"), serverNameField,
-				createToolTipNode("The unique name of the server"));
+        TextField serverNameField = new TextField();
+        serverNameField.setEditable(true);
+        this.serverName.bind(serverNameField.textProperty());
+        val.registerValidator(serverNameField, Validator.createEmptyValidator("Must specify a server name!"));
+        pane.addRow(row++, new Label("Name"), serverNameField, createToolTipNode("The unique name of the server"));
 
-		TextField pathTextField = new TextField();
-		pathTextField.setOnMouseClicked(e -> {
-			FileChooser fileChooser = new FileChooser();
-			fileChooser.setTitle("Select Server binary");
-			fileChooser.setInitialDirectory(new File("."));
-			fileChooser.getExtensionFilters().add(
-					(new ExtensionFilter("Server File", "*.jar", "*.exe")));
-			File f = fileChooser.showOpenDialog(getWindow());
-			if (f == null) {
-				return;
-			}
-			pathTextField.setText(f.getAbsolutePath());
-			serverFile.set(f);
-		});
-		pathTextField.setPrefWidth(300);
-		val.registerValidator(
-				pathTextField,
-				Validator
-						.createEmptyValidator("Must specify the path to server binary!"));
-		pane.addRow(row++, new Label("Server Path"), pathTextField,
-				createToolTipNode("The path to the server program"));
+        TextField pathTextField = new TextField();
+        pathTextField.setOnMouseClicked(e -> {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Select Server binary");
+            fileChooser.setInitialDirectory(new File("."));
+            fileChooser.getExtensionFilters().add((new ExtensionFilter("Server File", "*.jar", "*.exe")));
+            File f = fileChooser.showOpenDialog(getWindow());
+            if (f == null) {
+                return;
+            }
+            pathTextField.setText(f.getAbsolutePath());
+            serverFile.set(f);
+        });
+        pathTextField.setPrefWidth(300);
+        val.registerValidator(pathTextField, Validator.createEmptyValidator("Must specify the path to server binary!"));
+        pane.addRow(row++, new Label("Server Path"), pathTextField, createToolTipNode("The path to the server program"));
 
-		ComboBox<String> minMemoryBox = createMemoryComboBox(minMemory, val);
-		pane.addRow(row++, new Label("MinMemory"), minMemoryBox,
-				createToolTipNode("Amount of memory the server starts with"));
+        ComboBox<String> minMemoryBox = createMemoryComboBox(minMemory, val);
+        pane.addRow(row++, new Label("MinMemory"), minMemoryBox, createToolTipNode("Amount of memory the server starts with"));
 
-		ComboBox<String> maxMemoryBox = createMemoryComboBox(maxMemory, val);
-		pane.addRow(
-				row++,
-				new Label("MaxMemory"),
-				maxMemoryBox,
-				createToolTipNode("Amount of memeory the server can use until extensive garbage collection"));
+        ComboBox<String> maxMemoryBox = createMemoryComboBox(maxMemory, val);
+        pane.addRow(row++, new Label("MaxMemory"), maxMemoryBox, createToolTipNode("Amount of memeory the server can use until extensive garbage collection"));
 
-		CheckBox isJava7Box = new CheckBox();
-		isJava7Box.selectedProperty().addListener((observ, oldVal, newVal) -> {
-			// If checkbox is activated and the java7 path never set -> open
-			// dialog
-				if (newVal && Core.mainConfig.java7Path().isEmpty().get()) {
-					FileChooser fileChooser = new FileChooser();
-					fileChooser.setTitle("Select Java7 binary");
-					File f = fileChooser.showOpenDialog(getWindow());
-					if (f == null) {
-						return;
-					}
-					Core.mainConfig.java7Path().set(f.getAbsolutePath());
-				}
-			});
-		pane.addRow(
-				row++,
-				new Label("Java7"),
-				isJava7Box,
-				createToolTipNode("Use Java7 instead Java8. Forge has problems with Java8"));
+        CheckBox isJava7Box = new CheckBox();
+        isJava7Box.selectedProperty().addListener((observ, oldVal, newVal) -> {
+            // If checkbox is activated and the java7 path never set -> open
+            // dialog
+            if (newVal && Core.mainConfig.java7Path().isEmpty().get()) {
+                FileChooser fileChooser = new FileChooser();
+                fileChooser.setTitle("Select Java7 binary");
+                File f = fileChooser.showOpenDialog(getWindow());
+                if (f == null) {
+                    return;
+                }
+                Core.mainConfig.java7Path().set(f.getAbsolutePath());
+            }
+        });
+        pane.addRow(row++, new Label("Java7"), isJava7Box, createToolTipNode("Use Java7 instead Java8. Forge has problems with Java8"));
 
-		ComboBox<String> permGenSizeBox = new ComboBox<>(
-				FXCollections.observableArrayList("128M", "256M", "512M"));
-		permGenSizeBox.setEditable(true);
-		permGenSizeBox.getSelectionModel().select("256M");
-		permGenSizeBox.disableProperty().bind(
-				isJava7Box.selectedProperty().not());
-		this.permGenSize.bind(permGenSizeBox.valueProperty());
-		pane.addRow(
-				row++,
-				new Label("PermGenSize"),
-				permGenSizeBox,
-				createToolTipNode("The more mods are used the higher this parameter should be."));
+        ComboBox<String> permGenSizeBox = new ComboBox<>(FXCollections.observableArrayList("128M", "256M", "512M"));
+        permGenSizeBox.setEditable(true);
+        permGenSizeBox.getSelectionModel().select("256M");
+        permGenSizeBox.disableProperty().bind(isJava7Box.selectedProperty().not());
+        this.permGenSize.bind(permGenSizeBox.valueProperty());
+        pane.addRow(row++, new Label("PermGenSize"), permGenSizeBox, createToolTipNode("The more mods are used the higher this parameter should be."));
 
-		CheckBox doAutomaticBackups = new CheckBox();
-		autoBackup.bind(doAutomaticBackups.selectedProperty());
-		pane.addRow(
-				row++,
-				new Label("Auto-Backup"),
-				doAutomaticBackups,
-				createToolTipNode("Create automatic backups of the server. Currently this happens at servers shutdown"));
+        CheckBox doAutomaticBackups = new CheckBox();
+        autoBackup.bind(doAutomaticBackups.selectedProperty());
+        pane.addRow(row++, new Label("Auto-Backup"), doAutomaticBackups, createToolTipNode("Create automatic backups of the server. Currently this happens at servers shutdown"));
 
-		CheckBox doAutomaticRestarts = new CheckBox();
-		autoRestart.bind(doAutomaticRestarts.selectedProperty());
-		pane.addRow(
-				row++,
-				new Label("Auto-Restart"),
-				doAutomaticRestarts,
-				createToolTipNode("Automatically restarts the server after shutdown. Do not restart if the button shutdown is pressed"));
+        CheckBox doAutomaticRestarts = new CheckBox();
+        autoRestart.bind(doAutomaticRestarts.selectedProperty());
+        pane.addRow(row++, new Label("Auto-Restart"), doAutomaticRestarts, createToolTipNode("Automatically restarts the server after shutdown. Do not restart if the button shutdown is pressed"));
 
-		Actions.OK.disabledProperty().bind(val.invalidProperty());
+        Actions.OK.disabledProperty().bind(val.invalidProperty());
 
-		return pane;
-	}
+        return pane;
+    }
 
-	private ComboBox<String> createMemoryComboBox(
-			StringProperty binderProperty, ValidationSupport val) {
-		ComboBox<String> t = new ComboBox<>();
+    private ComboBox<String> createMemoryComboBox(StringProperty binderProperty, ValidationSupport val) {
+        ComboBox<String> t = new ComboBox<>();
 
-		t.getItems().addAll("512M", "1G", "2G", "4G", "8G", "16G");
-		t.setEditable(true);
-		t.getSelectionModel().select("1G");
+        t.getItems().addAll("512M", "1G", "2G", "4G", "8G", "16G");
+        t.setEditable(true);
+        t.getSelectionModel().select("1G");
 
-		Pattern p = Pattern.compile("\\d+[MG]");
-		val.registerValidator(t, (Control t1, String u) -> {
-			boolean isValidFormat = p.matcher(u).matches();
-			if (!isValidFormat) {
-				shake();
-				return ValidationResult.fromError(t, "Invalid format!");
-			} else {
-				binderProperty.set(u);
-				return new ValidationResult();
-			}
-		});
+        Pattern p = Pattern.compile("\\d+[MG]");
+        val.registerValidator(t, (Control t1, String u) -> {
+            boolean isValidFormat = p.matcher(u).matches();
+            if (!isValidFormat) {
+                shake();
+                return ValidationResult.fromError(t, "Invalid format!");
+            } else {
+                binderProperty.set(u);
+                return new ValidationResult();
+            }
+        });
 
-		return t;
-	}
+        return t;
+    }
 
-	private Node createToolTipNode(String text) {
-		Node n = new FontAwesome().fontColor(Color.ORANGE).create(
-				Glyph.INFO_SIGN.getChar());
+    private Node createToolTipNode(String text) {
+        Node n = new FontAwesome().fontColor(Color.ORANGE).create(Glyph.INFO_SIGN.getChar());
 
-		Tooltip.install(n, new Tooltip(text));
-		return n;
-	}
+        Tooltip.install(n, new Tooltip(text));
+        return n;
+    }
 
-	public Optional<ObservedServer> startDialog() {
+    public Optional<ObservedServer> startDialog() {
 
-		Action action = show();
-		if (action == Actions.OK) {
-			if (this.permGenSize.isEmpty().get()) {
-				return Optional.of(new ObservedServer(this.serverName.get(),
-						this.serverFile.get(), this.minMemory.get(),
-						this.maxMemory.get(), this.autoBackup.get(),
-						this.autoRestart.get()));
-			} else {
-				return Optional.of(new ObservedJava7Server(this.serverName
-						.get(), this.serverFile.get(), this.minMemory.get(),
-						this.maxMemory.get(), this.autoBackup.get(),
-						this.autoRestart.get(), this.permGenSize.get()));
-			}
-		} else
-			return Optional.empty();
-	}
+        Action action = show();
+        if (action == Actions.OK) {
+            if (this.permGenSize.isEmpty().get()) {
+                return Optional.of(new ObservedServer(this.serverName.get(), this.serverFile.get(), this.minMemory.get(), this.maxMemory.get(), this.autoBackup.get(), this.autoRestart.get()));
+            } else {
+                return Optional.of(new ObservedJava7Server(this.serverName.get(), this.serverFile.get(), this.minMemory.get(), this.maxMemory.get(), this.autoBackup.get(), this.autoRestart.get(), this.permGenSize.get()));
+            }
+        } else
+            return Optional.empty();
+    }
 
 }
