@@ -71,4 +71,9 @@ public class ServerOverwatchThread extends Task<Void> {
         return isAlive;
     }
 
+    public void hardStop() {
+        System.out.println("Stop server forcibly!");
+        this.serverProcess.destroyForcibly();
+    }
+
 }

@@ -4,35 +4,28 @@ import java.time.LocalDateTime;
 import java.util.function.Predicate;
 
 import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
-import javafx.collections.ListChangeListener;
 import javafx.geometry.Insets;
-import javafx.geometry.Orientation;
 import javafx.scene.Node;
-import javafx.scene.control.Label;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.input.Clipboard;
-import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.FlowPane;
 import javafx.util.Callback;
 import de.minestar.nightwatch.logging.LogLevel;
 import de.minestar.nightwatch.logging.ServerLog;
 import de.minestar.nightwatch.logging.ServerLogEntry;
 
-public class LogTab extends Tab{
+public class LogTab extends Tab {
 
     protected TableView<ServerLogEntry> logTable;
     protected ServerLog serverlog;
     protected Predicate<ServerLogEntry> currentFilter;
 
-    private StringProperty rowCountProperty;
-    private StringProperty selectedRowCountProperty;
+//    private StringProperty rowCountProperty;
+//    private StringProperty selectedRowCountProperty;
 
     public LogTab(String name, ServerLog serverLog) {
         super(name);
@@ -43,29 +36,29 @@ public class LogTab extends Tab{
         this.setClosable(true);
     }
 
-
     private void createContent() {
-        BorderPane vBox = new BorderPane();
-        vBox.setPadding(new Insets(10));
-        vBox.setTop(createStatusPane());
+        BorderPane Pane = new BorderPane();
+        Pane.setPadding(new Insets(10));
+        Pane.setTop(createTop());
+//        vBox.setTop(createStatusPane());
 
         this.logTable = new TableView<>();
         logTable.getStylesheets().add(getClass().getResource("/styles/tableview.css").toExternalForm());
         logTable.getStyleClass().add("log-table");
         logTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-        
-        // Copy selected lines to clipboard
-        logTable.getSelectionModel().getSelectedItems().addListener((ListChangeListener<ServerLogEntry>) c -> {
-            selectedRowCountProperty.setValue(c.getList().size() + "");
-            StringBuilder sBuilder = new StringBuilder();
-            c.getList().parallelStream().forEachOrdered((ServerLogEntry l) -> {
-                sBuilder.append(l.getTime().format(MainGUI.GERMAN_FORMAT)).append(' ').append(l.getLogLevel()).append(' ').append(l.getText()).append('\n');
-            });
-            ClipboardContent content = new ClipboardContent();
-            content.putString(sBuilder.toString());
-            Clipboard.getSystemClipboard().setContent(content);
 
-        });
+//        // Copy selected lines to clipboard
+//        logTable.getSelectionModel().getSelectedItems().addListener((ListChangeListener<ServerLogEntry>) c -> {
+//            selectedRowCountProperty.setValue(c.getList().size() + "");
+//            StringBuilder sBuilder = new StringBuilder();
+//            c.getList().parallelStream().forEachOrdered((ServerLogEntry l) -> {
+//                sBuilder.append(l.getTime().format(MainGUI.GERMAN_FORMAT)).append(' ').append(l.getLogLevel()).append(' ').append(l.getText()).append('\n');
+//            });
+//            ClipboardContent content = new ClipboardContent();
+//            content.putString(sBuilder.toString());
+//            Clipboard.getSystemClipboard().setContent(content);
+//
+//        });
 
         TableColumn<ServerLogEntry, String> timeColumn = new TableColumn<>("Time");
         timeColumn.setSortable(false);
@@ -75,7 +68,7 @@ public class LogTab extends Tab{
             return property;
         });
         logTable.getColumns().add(timeColumn);
-        
+
         TableColumn<ServerLogEntry, String> sourceColumn = new TableColumn<>("Source");
         sourceColumn.setSortable(false);
         sourceColumn.setCellValueFactory(new PropertyValueFactory<>("source"));
@@ -137,40 +130,43 @@ public class LogTab extends Tab{
             }
         });
 
+//        logTable.getItems().addListener((ListChangeListener<ServerLogEntry>) c -> rowCountProperty.setValue(c.getList().size() + ""));
 
-        logTable.getItems().addListener((ListChangeListener<ServerLogEntry>) c -> rowCountProperty.setValue(c.getList().size() + ""));
-
-        vBox.setCenter(logTable);
-        vBox.setBottom(createBottom());
-        setContent(vBox);
+        Pane.setCenter(logTable);
+        Pane.setBottom(createBottom());
+        setContent(Pane);
     }
-    
+
+    protected Node createTop() {
+        return null;
+    }
+
     protected Node createBottom() {
         return null;
     }
-    
-    private Node createStatusPane() {
 
-        FlowPane statusPane = new FlowPane(Orientation.HORIZONTAL, 10, 0);
-        statusPane.setPadding(new Insets(0, 0, 5, 0));
-
-        Label rowCountText = new Label();
-        rowCountProperty = rowCountText.textProperty();
-
-        Label selectedRowCountText = new Label("0");
-        selectedRowCountProperty = selectedRowCountText.textProperty();
-
-        statusPane.getChildren().addAll(new Label("Entries:"), rowCountText, new Label("Selected:"), selectedRowCountText);
-
-        return statusPane;
-    }
+//    private Node createStatusPane() {
+//
+//        FlowPane statusPane = new FlowPane(Orientation.HORIZONTAL, 10, 0);
+//        statusPane.setPadding(new Insets(0, 0, 5, 0));
+//
+//        Label rowCountText = new Label();
+//        rowCountProperty = rowCountText.textProperty();
+//
+//        Label selectedRowCountText = new Label("0");
+//        selectedRowCountProperty = selectedRowCountText.textProperty();
+//
+//        statusPane.getChildren().addAll(new Label("Entries:"), rowCountText, new Label("Selected:"), selectedRowCountText);
+//
+//        return statusPane;
+//    }
 
     public void applyFilter(Predicate<ServerLogEntry> predicate) {
-        
+
         this.currentFilter = predicate;
         logTable.getItems().setAll(serverlog.applyFilter(predicate));
     }
-    
+
     public ServerLog getServerlog() {
         return serverlog;
     }

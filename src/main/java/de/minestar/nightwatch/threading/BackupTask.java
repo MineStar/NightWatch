@@ -46,6 +46,7 @@ public class BackupTask extends Task<Void> {
         ZipFileVisitor.zipDirWithProgress(source, targetFile, procededFiles);
         updateMessage("Backup complete");
         
+        
         return null;
     }
 

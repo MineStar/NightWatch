@@ -67,6 +67,11 @@ public class ServerLogTab extends LogTab {
         return consoleInput;
     }
 
+    @Override
+    protected Node createTop() {
+        return new ServerControlPane(this);
+    }
+
     public void startServer() {
         this.commandQueue = new LinkedBlockingQueue<>();
         this.serverOverWatchThread = new ServerOverwatchThread(this.server, this.serverlog.entries(), this.commandQueue);
@@ -74,10 +79,14 @@ public class ServerLogTab extends LogTab {
         thread.start();
     }
 
-    public void stopServer() {
+    public void shutdownServer() {
         this.commandQueue.add("stop");
         this.serverOverWatchThread = null;
         this.commandQueue = null;
+    }
+
+    protected void stopServer() {
+        this.serverOverWatchThread.hardStop();
     }
 
     public ObservedServer getServer() {

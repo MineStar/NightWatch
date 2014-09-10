@@ -4,6 +4,7 @@ import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.concurrent.Task;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
@@ -21,12 +22,13 @@ public class RestartDialog extends Dialog {
 
     private BooleanProperty wasCanceled;
 
-    private static final int STEPS = 2;
+    private static final int STEPS = 5;
 
     private Task<Boolean> restartTask;
 
     public RestartDialog(Stage stage) {
         super(stage, "Restarting server", false, DialogStyle.NATIVE);
+        System.out.println(stage);
         this.setClosable(false);
         this.wasCanceled = new SimpleBooleanProperty(false);
         setContent(createContent());
@@ -34,6 +36,7 @@ public class RestartDialog extends Dialog {
 
     private Node createContent() {
         VBox vBox = new VBox(10);
+        vBox.setPadding(new Insets(10));
         vBox.setAlignment(Pos.CENTER);
 
         Label timeLabel = new Label();

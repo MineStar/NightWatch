@@ -1,0 +1,12 @@
+.startButton {
+	-fx-base: #68d188;
+}
+
+
+.shutdownButton {
+	-fx-base: #FFA500;
+}
+
+.stopButton {
+	-fx-base: #e55852;
+}
