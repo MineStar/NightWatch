@@ -52,7 +52,7 @@ public class ZipFileVisitor extends SimpleFileVisitor<Path> {
      */
     public static void zipDirWithProgress(File directory, File targetFile, IntegerProperty counter) throws IOException {
         ZipOutputStream zos = new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(targetFile)), UTF_8);
-        ZipFileVisitor visitor = new ZipFileVisitor(zos, counter);
+        ZipFileVisitor visitor = new ZipFileVisitor(zos, counter, directory.toPath());
         Files.walkFileTree(directory.toPath(), visitor);
         zos.close();
     }
@@ -60,15 +60,20 @@ public class ZipFileVisitor extends SimpleFileVisitor<Path> {
     private ZipOutputStream zipStream;
     private int progress = 0;
     private Optional<IntegerProperty> fileCounter;
+    private Path directory;
 
-    private ZipFileVisitor(ZipOutputStream zipStream, IntegerProperty informedCounter) {
+    private ZipFileVisitor(ZipOutputStream zipStream, IntegerProperty informedCounter, Path directory) {
         this.zipStream = zipStream;
         this.fileCounter = Optional.ofNullable(informedCounter);
+        this.directory = directory;
     }
 
     @Override
     public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
-        ZipEntry ze = new ZipEntry(file.toString());
+        // Store only the path relative to the directory in the ZIP
+        // This avoids path like C:\Users\XYZ\Desktop\server\world\level.dat
+        // and we have only world\level.dat stored in the ZIP
+        ZipEntry ze = new ZipEntry(directory.relativize(file).toString());
         zipStream.putNextEntry(ze);
         Files.copy(file, zipStream);
         fileCounter.ifPresent(e -> e.set(++progress));

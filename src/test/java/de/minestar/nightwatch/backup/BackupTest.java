@@ -48,5 +48,4 @@ public class BackupTest {
         LocalDateTime testDate = LocalDateTime.of(2014, 9, 5, 23, 8, 49);
         assertEquals("05.09.2014_23.08.49", testDate.format(BackupTask.BACKUP_TIME_FORMAT));
     }
-
 }
