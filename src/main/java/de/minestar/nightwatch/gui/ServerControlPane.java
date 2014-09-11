@@ -19,6 +19,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.FlowPane;
 import javafx.stage.DirectoryChooser;
+import javafx.stage.FileChooser;
 
 import org.controlsfx.control.action.Action;
 import org.controlsfx.dialog.Dialog;
@@ -28,6 +29,7 @@ import org.controlsfx.dialog.Dialogs;
 import de.minestar.nightwatch.core.Core;
 import de.minestar.nightwatch.server.ObservedServer;
 import de.minestar.nightwatch.threading.BackupTask;
+import de.minestar.nightwatch.threading.RestoreBackupTask;
 
 public class ServerControlPane extends FlowPane {
 
@@ -183,9 +185,9 @@ public class ServerControlPane extends FlowPane {
         this.createBackupButton.setOnAction(e -> onStartBackup(parent));
 
         // TODO: Implement function and enable button
-        this.restoreBackupButton = new Button("Load Backup", loadIcon(ICON_BUTTON_LOAD_BACKUP));
+        this.restoreBackupButton = new Button("Restore Backup", loadIcon(ICON_BUTTON_LOAD_BACKUP));
         this.restoreBackupButton.setNodeOrientation(NodeOrientation.RIGHT_TO_LEFT);
-        this.restoreBackupButton.setOnAction(e -> showNotImplementedDialog());
+        this.restoreBackupButton.setOnAction(e -> onStartRestoreBackup(parent));
 
         return Arrays.asList(createBackupButton, restoreBackupButton);
     }
@@ -211,6 +213,7 @@ public class ServerControlPane extends FlowPane {
         startBackup(backupTask);
 
     }
+
     private void startBackup(BackupTask backupTask) {
         Thread backupThread = new Thread(backupTask, "BackupThread");
         Dialogs.create().style(DialogStyle.NATIVE).showWorkerProgress(backupTask);
@@ -218,6 +221,39 @@ public class ServerControlPane extends FlowPane {
         backupThread.start();
     }
 
+    private void onStartRestoreBackup(ServerLogTab parent) {
+        Action result = Dialogs.create().style(DialogStyle.NATIVE).message("This will delete ALL files in the server folder!").showWarning();
+        if (result != Dialog.Actions.OK)
+            return;
+
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setInitialDirectory(new File(Core.mainConfig.backupFolder().get()));
+        File backupFile = fileChooser.showOpenDialog(MainGUI.stage);
+        if (backupFile == null)
+            return;
+
+        ObservedServer server = parent.getServer();
+        // Check if the backup was from this server
+        if (!backupFile.getName().startsWith(server.getName())) {
+            result = Dialogs.create().style(DialogStyle.NATIVE).message("This may be not a backup of this server\n" + backupFile.getName() + "\nAre you sure to use this?!").showConfirm();
+            if (result != Dialog.Actions.OK)
+                return;
+        }
+
+        // Start restoration of backup
+        RestoreBackupTask restoreBackupTask = new RestoreBackupTask(server.getDirectory(), backupFile);
+        Dialogs.create().style(DialogStyle.NATIVE).showWorkerProgress(restoreBackupTask);
+        restoreBackupTask.exceptionProperty().addListener((observ, oldVal, newVal) -> Dialogs.create().style(DialogStyle.NATIVE).message("Error while restoring backup!").showException(newVal));
+
+        Thread restoreBackupThread = new Thread(restoreBackupTask, "RestoreBackupThread");
+        restoreBackupThread.start();
+
+        restoreBackupTask.setOnSucceeded(e -> {
+            Platform.runLater(() -> {
+                Dialogs.create().style(DialogStyle.NATIVE).message("Backup restored").showInformation();;
+            });
+        });
+    }
     private Node createSettingsButton(ServerLogTab parent) {
         this.settingsButton = new Button("Settings", loadIcon(ICON_BUTTON_SETTINGS));
         this.settingsButton.setNodeOrientation(NodeOrientation.RIGHT_TO_LEFT);
