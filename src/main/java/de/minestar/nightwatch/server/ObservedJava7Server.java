@@ -23,6 +23,15 @@ public class ObservedJava7Server extends ObservedServer {
     }
 
     @Override
+    public void update(ObservedServer other) {
+        if (!(other instanceof ObservedJava7Server))
+            return;
+
+        super.update(other);
+        this.permGenSize = ((ObservedJava7Server) other).permGenSize;
+    }
+
+    @Override
     protected void buildCommands(List<String> processCommands) {
         super.buildCommands(processCommands);
         processCommands.set(0, Core.mainConfig.java7Path().get());

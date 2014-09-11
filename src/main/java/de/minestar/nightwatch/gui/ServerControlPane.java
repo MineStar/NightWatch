@@ -4,6 +4,7 @@ import java.awt.Desktop;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
@@ -183,11 +184,12 @@ public class ServerControlPane extends FlowPane {
         this.createBackupButton = new Button("Create Backup", loadIcon(ICON_BUTTON_CREATE_BACKUP));
         this.createBackupButton.setNodeOrientation(NodeOrientation.RIGHT_TO_LEFT);
         this.createBackupButton.setOnAction(e -> onStartBackup(parent));
+        this.createBackupButton.disableProperty().bind(isRunning);
 
-        // TODO: Implement function and enable button
         this.restoreBackupButton = new Button("Restore Backup", loadIcon(ICON_BUTTON_LOAD_BACKUP));
         this.restoreBackupButton.setNodeOrientation(NodeOrientation.RIGHT_TO_LEFT);
         this.restoreBackupButton.setOnAction(e -> onStartRestoreBackup(parent));
+        this.restoreBackupButton.disableProperty().bind(isRunning);
 
         return Arrays.asList(createBackupButton, restoreBackupButton);
     }
@@ -254,21 +256,33 @@ public class ServerControlPane extends FlowPane {
             });
         });
     }
+
     private Node createSettingsButton(ServerLogTab parent) {
         this.settingsButton = new Button("Settings", loadIcon(ICON_BUTTON_SETTINGS));
         this.settingsButton.setNodeOrientation(NodeOrientation.RIGHT_TO_LEFT);
-        // TODO: Implement editing settings for the current selected server
-        this.settingsButton.setOnAction(e -> showNotImplementedDialog());
+        this.settingsButton.setOnAction(e -> onOpenServerSettings(parent));
+        this.settingsButton.disableProperty().bind(isRunning);
 
         return settingsButton;
     }
 
-    private Node loadIcon(String iconName) {
-        return new ImageView(new Image(getClass().getResourceAsStream("/icons/" + iconName)));
+    private void onOpenServerSettings(ServerLogTab parent) {
+        // Start option dialog
+        ServerOptionsDialog dia = new ServerOptionsDialog(MainGUI.stage, parent.getServer());
+        Optional<ObservedServer> result = dia.startDialog();
+        // User has canceled the dialog
+        if (!result.isPresent())
+            return;
+
+        // Update the server
+        ObservedServer updatedServer = result.get();
+        Core.serverManager.registeredServers().replace(parent.getServer().getName().toLowerCase(), updatedServer);
+        parent.getServer().update(updatedServer);
+        parent.setText(updatedServer.getName());
     }
 
-    private void showNotImplementedDialog() {
-        Dialogs.create().style(DialogStyle.NATIVE).message("At the moment your requested features was not fully implemented.").showWarning();
+    private Node loadIcon(String iconName) {
+        return new ImageView(new Image(getClass().getResourceAsStream("/icons/" + iconName)));
     }
 
 }

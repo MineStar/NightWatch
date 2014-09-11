@@ -39,14 +39,14 @@ import de.minestar.nightwatch.server.ObservedServer;
 
 public class CreateServerDialog extends Dialog {
 
-    private StringProperty serverName = new SimpleStringProperty();
-    private ObjectProperty<File> serverFile = new SimpleObjectProperty<>();
-    private StringProperty minMemory = new SimpleStringProperty();
-    private StringProperty maxMemory = new SimpleStringProperty();
-    private BooleanProperty isJava7 = new SimpleBooleanProperty();
-    private StringProperty permGenSize = new SimpleStringProperty();
-    private BooleanProperty autoBackup = new SimpleBooleanProperty();
-    private BooleanProperty autoRestart = new SimpleBooleanProperty();
+    protected StringProperty serverName = new SimpleStringProperty();
+    protected ObjectProperty<File> serverFile = new SimpleObjectProperty<>();
+    protected ObjectProperty<String> minMemory = new SimpleObjectProperty<>();
+    protected ObjectProperty<String> maxMemory = new SimpleObjectProperty<>();
+    protected BooleanProperty isJava7 = new SimpleBooleanProperty();
+    protected ObjectProperty<String> permGenSize = new SimpleObjectProperty<>();
+    protected BooleanProperty autoBackup = new SimpleBooleanProperty();
+    protected BooleanProperty autoRestart = new SimpleBooleanProperty();
 
     private ValidationSupport val;
 
@@ -69,7 +69,7 @@ public class CreateServerDialog extends Dialog {
 
         TextField serverNameField = new TextField();
         serverNameField.setEditable(true);
-        this.serverName.bind(serverNameField.textProperty());
+        this.serverName = serverNameField.textProperty();
         val.registerValidator(serverNameField, Validator.createEmptyValidator("Must specify a server name!"));
         pane.addRow(row++, new Label("Name"), serverNameField, createToolTipNode("The unique name of the server"));
 
@@ -83,17 +83,19 @@ public class CreateServerDialog extends Dialog {
             if (f == null) {
                 return;
             }
-            pathTextField.setText(f.getAbsolutePath());
             serverFile.set(f);
         });
+        pathTextField.textProperty().bind(serverFile.asString());
         pathTextField.setPrefWidth(300);
         val.registerValidator(pathTextField, Validator.createEmptyValidator("Must specify the path to server binary!"));
         pane.addRow(row++, new Label("Server Path"), pathTextField, createToolTipNode("The path to the server program"));
 
-        ComboBox<String> minMemoryBox = createMemoryComboBox(minMemory, val);
+        ComboBox<String> minMemoryBox = createMemoryComboBox(val);
+        this.minMemory = minMemoryBox.valueProperty();
         pane.addRow(row++, new Label("MinMemory"), minMemoryBox, createToolTipNode("Amount of memory the server starts with"));
 
-        ComboBox<String> maxMemoryBox = createMemoryComboBox(maxMemory, val);
+        ComboBox<String> maxMemoryBox = createMemoryComboBox(val);
+        this.maxMemory = maxMemoryBox.valueProperty();
         pane.addRow(row++, new Label("MaxMemory"), maxMemoryBox, createToolTipNode("Amount of memeory the server can use until extensive garbage collection"));
 
         CheckBox isJava7Box = new CheckBox();
@@ -110,23 +112,22 @@ public class CreateServerDialog extends Dialog {
                 Core.mainConfig.java7Path().set(f.getAbsolutePath());
             }
         });
-        isJava7.bind(isJava7Box.selectedProperty());
-
+        this.isJava7 = isJava7Box.selectedProperty();
         pane.addRow(row++, new Label("Java7"), isJava7Box, createToolTipNode("Use Java7 instead Java8. Forge has problems with Java8"));
 
         ComboBox<String> permGenSizeBox = new ComboBox<>(FXCollections.observableArrayList("128M", "256M", "512M"));
         permGenSizeBox.setEditable(true);
         permGenSizeBox.getSelectionModel().select("256M");
         permGenSizeBox.disableProperty().bind(isJava7Box.selectedProperty().not());
-        this.permGenSize.bind(permGenSizeBox.valueProperty());
+        this.permGenSize = permGenSizeBox.valueProperty();
         pane.addRow(row++, new Label("PermGenSize"), permGenSizeBox, createToolTipNode("The more mods are used the higher this parameter should be."));
 
         CheckBox doAutomaticBackups = new CheckBox();
-        autoBackup.bind(doAutomaticBackups.selectedProperty());
+        this.autoBackup = doAutomaticBackups.selectedProperty();
         pane.addRow(row++, new Label("Auto-Backup"), doAutomaticBackups, createToolTipNode("Create automatic backups of the server. Currently this happens at servers shutdown"));
 
         CheckBox doAutomaticRestarts = new CheckBox();
-        autoRestart.bind(doAutomaticRestarts.selectedProperty());
+        this.autoRestart = doAutomaticRestarts.selectedProperty();
         pane.addRow(row++, new Label("Auto-Restart"), doAutomaticRestarts, createToolTipNode("Automatically restarts the server after shutdown. Do not restart if the button shutdown is pressed"));
 
         Actions.OK.disabledProperty().bind(val.invalidProperty());
@@ -134,7 +135,7 @@ public class CreateServerDialog extends Dialog {
         return pane;
     }
 
-    private ComboBox<String> createMemoryComboBox(StringProperty binderProperty, ValidationSupport val) {
+    private ComboBox<String> createMemoryComboBox(ValidationSupport val) {
         ComboBox<String> t = new ComboBox<>();
 
         t.getItems().addAll("512M", "1G", "2G", "4G", "8G", "16G");
@@ -148,7 +149,6 @@ public class CreateServerDialog extends Dialog {
                 shake();
                 return ValidationResult.fromError(t, "Invalid format!");
             } else {
-                binderProperty.set(u);
                 return new ValidationResult();
             }
         });

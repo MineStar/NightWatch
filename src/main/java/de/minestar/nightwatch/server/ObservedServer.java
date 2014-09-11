@@ -86,6 +86,16 @@ public class ObservedServer {
     public boolean doAutoRestarts() {
         return doAutoRestarts;
     }
+    
+    public void update(ObservedServer other) {
+        this.name = other.name;
+        this.minMemory = other.minMemory;
+        this.maxMemory = other.maxMemory;
+        this.serverFile = other.serverFile;
+        this.directory = other.directory;
+        this.doAutomaticBackups = other.doAutomaticBackups;
+        this.doAutoRestarts = other.doAutoRestarts;
+    }
 
     @Override
     public String toString() {
