@@ -6,9 +6,7 @@ import java.util.regex.Pattern;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.scene.Node;
@@ -39,14 +37,15 @@ import de.minestar.nightwatch.server.ObservedServer;
 
 public class CreateServerDialog extends Dialog {
 
-    protected StringProperty serverName = new SimpleStringProperty();
-    protected ObjectProperty<File> serverFile = new SimpleObjectProperty<>();
-    protected ObjectProperty<String> minMemory = new SimpleObjectProperty<>();
-    protected ObjectProperty<String> maxMemory = new SimpleObjectProperty<>();
-    protected BooleanProperty isJava7 = new SimpleBooleanProperty();
-    protected ObjectProperty<String> permGenSize = new SimpleObjectProperty<>();
-    protected BooleanProperty autoBackup = new SimpleBooleanProperty();
-    protected BooleanProperty autoRestart = new SimpleBooleanProperty();
+    protected StringProperty serverName;
+    protected ObjectProperty<File> serverFile;
+    protected ObjectProperty<String> minMemory;
+    protected ObjectProperty<String> maxMemory;
+    protected BooleanProperty isJava7;
+    protected ObjectProperty<String> permGenSize;
+    protected BooleanProperty autoBackup;
+    protected BooleanProperty autoRestart;
+    protected StringProperty vmOptions;
 
     private ValidationSupport val;
 
@@ -74,6 +73,7 @@ public class CreateServerDialog extends Dialog {
         pane.addRow(row++, new Label("Name"), serverNameField, createToolTipNode("The unique name of the server"));
 
         TextField pathTextField = new TextField();
+        this.serverFile = new SimpleObjectProperty<>();
         pathTextField.setOnMouseClicked(e -> {
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Select Server binary");
@@ -130,6 +130,10 @@ public class CreateServerDialog extends Dialog {
         this.autoRestart = doAutomaticRestarts.selectedProperty();
         pane.addRow(row++, new Label("Auto-Restart"), doAutomaticRestarts, createToolTipNode("Automatically restarts the server after shutdown. Do not restart if the button shutdown is pressed"));
 
+        TextField vmOptionsField = new TextField();
+        vmOptions = vmOptionsField.textProperty();
+        pane.addRow(row++, new Label("VM Options"), vmOptionsField, createToolTipNode("Additional VM option the server starts with. You need to know what you do!"));
+
         Actions.OK.disabledProperty().bind(val.invalidProperty());
 
         return pane;
@@ -168,9 +172,9 @@ public class CreateServerDialog extends Dialog {
         Action action = show();
         if (action == Actions.OK) {
             if (this.isJava7.not().get()) {
-                return Optional.of(new ObservedServer(this.serverName.get(), this.serverFile.get(), this.minMemory.get(), this.maxMemory.get(), this.autoBackup.get(), this.autoRestart.get()));
+                return Optional.of(new ObservedServer(this.serverName.get(), this.serverFile.get(), this.minMemory.get(), this.maxMemory.get(), this.vmOptions.get(), this.autoBackup.get(), this.autoRestart.get()));
             } else {
-                return Optional.of(new ObservedJava7Server(this.serverName.get(), this.serverFile.get(), this.minMemory.get(), this.maxMemory.get(), this.autoBackup.get(), this.autoRestart.get(), this.permGenSize.get()));
+                return Optional.of(new ObservedJava7Server(this.serverName.get(), this.serverFile.get(), this.minMemory.get(), this.maxMemory.get(), this.vmOptions.get(), this.autoBackup.get(), this.autoRestart.get(), this.permGenSize.get()));
             }
         } else
             return Optional.empty();

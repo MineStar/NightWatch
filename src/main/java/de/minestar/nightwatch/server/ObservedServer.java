@@ -21,16 +21,19 @@ public class ObservedServer {
     private boolean doAutomaticBackups;
     private boolean doAutoRestarts;
 
+    private String vmOptions;
+
     protected ObservedServer() {
         // For serialization
     }
 
-    public ObservedServer(String name, File serverFile, String minMemory, String maxMemory, boolean automaticBackups, boolean doAutoRestarts) {
+    public ObservedServer(String name, File serverFile, String minMemory, String maxMemory, String vmOptions, boolean automaticBackups, boolean doAutoRestarts) {
         this.name = name;
         this.serverFile = serverFile;
         this.directory = serverFile.getParentFile();
         this.minMemory = minMemory;
         this.maxMemory = maxMemory;
+        this.vmOptions = vmOptions;
         this.doAutomaticBackups = automaticBackups;
         this.doAutoRestarts = doAutoRestarts;
     }
@@ -52,6 +55,7 @@ public class ObservedServer {
         processCommands.add("java");
         processCommands.add("-Xms" + minMemory);
         processCommands.add("-Xmx" + maxMemory);
+        processCommands.add(vmOptions);
         processCommands.add("-jar");
         processCommands.add(serverFile.getAbsolutePath());
         processCommands.add("nogui");
@@ -77,6 +81,10 @@ public class ObservedServer {
         return serverFile;
     }
 
+    public String getVmOptions() {
+        return vmOptions;
+    }
+
     @JsonGetter
     public boolean doAutomaticBackups() {
         return doAutomaticBackups;
@@ -86,7 +94,7 @@ public class ObservedServer {
     public boolean doAutoRestarts() {
         return doAutoRestarts;
     }
-    
+
     public void update(ObservedServer other) {
         this.name = other.name;
         this.minMemory = other.minMemory;
@@ -95,11 +103,12 @@ public class ObservedServer {
         this.directory = other.directory;
         this.doAutomaticBackups = other.doAutomaticBackups;
         this.doAutoRestarts = other.doAutoRestarts;
+        this.vmOptions = other.vmOptions;
     }
 
     @Override
     public String toString() {
-        return "ObservedServer [name=" + name + ", minMemory=" + minMemory + ", maxMemory=" + maxMemory + ", directory=" + directory + ", serverFile=" + serverFile + ", doAutomaticBackups=" + doAutomaticBackups + ", doAutoRestarts=" + doAutoRestarts + "]";
+        return "ObservedServer [name=" + name + ", minMemory=" + minMemory + ", maxMemory=" + maxMemory + ", directory=" + directory + ", serverFile=" + serverFile + ", doAutomaticBackups=" + doAutomaticBackups + ", doAutoRestarts=" + doAutoRestarts + ", vmOptions=" + vmOptions + "]";
     }
 
 }
