@@ -19,5 +19,6 @@ public class ServerOptionsDialog extends CreateServerDialog {
 
         this.serverFile.set(currentServer.getServerFile());
         this.serverName.set(currentServer.getName());
+        this.vmOptions.set(currentServer.getVmOptions());
     }
 }
