@@ -33,7 +33,7 @@ public class ServerLogTab extends LogTab {
             while (c.next()) {
                 if (c.wasAdded()) {
                     Platform.runLater(() -> {
-                        this.logTable.getItems().addAll(c.getAddedSubList().stream().filter(currentFilter).collect(Collectors.toList()));
+                        this.logTable.getItems().addAll(c.getAddedSubList().stream().filter(currentFilter).collect(Collectors.<ServerLogEntry> toList()));
                     });
                 }
             }
