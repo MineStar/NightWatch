@@ -85,7 +85,9 @@ public class CreateServerDialog extends Dialog {
             }
             serverFile.set(f);
         });
+        pathTextField.setText("");
         pathTextField.textProperty().bind(serverFile.asString());
+        serverFile.set(new File(""));
         pathTextField.setPrefWidth(300);
         val.registerValidator(pathTextField, Validator.createEmptyValidator("Must specify the path to server binary!"));
         pane.addRow(row++, new Label("Server Path"), pathTextField, createToolTipNode("The path to the server program"));
@@ -124,10 +126,12 @@ public class CreateServerDialog extends Dialog {
 
         CheckBox doAutomaticBackups = new CheckBox();
         this.autoBackup = doAutomaticBackups.selectedProperty();
+        this.autoBackup.set(true);
         pane.addRow(row++, new Label("Auto-Backup"), doAutomaticBackups, createToolTipNode("Create automatic backups of the server. Currently this happens at servers shutdown"));
 
         CheckBox doAutomaticRestarts = new CheckBox();
         this.autoRestart = doAutomaticRestarts.selectedProperty();
+        this.autoRestart.set(true);
         pane.addRow(row++, new Label("Auto-Restart"), doAutomaticRestarts, createToolTipNode("Automatically restarts the server after shutdown. Do not restart if the button shutdown is pressed"));
 
         TextField vmOptionsField = new TextField();
