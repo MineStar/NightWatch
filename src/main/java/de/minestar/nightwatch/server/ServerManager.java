@@ -47,7 +47,7 @@ public class ServerManager {
             e.printStackTrace();
         }
     }
-    
+
     public ObservableMap<String, ObservedServer> registeredServers() {
         return registeredServers;
     }

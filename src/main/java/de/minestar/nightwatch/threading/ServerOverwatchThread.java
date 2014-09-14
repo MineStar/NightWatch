@@ -1,6 +1,6 @@
 package de.minestar.nightwatch.threading;
 
-import java.util.List;
+import java.time.LocalDateTime;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import javafx.application.Platform;
@@ -8,6 +8,8 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.concurrent.Task;
 import de.minestar.nightwatch.core.Core;
+import de.minestar.nightwatch.logging.LogLevel;
+import de.minestar.nightwatch.logging.ServerLog;
 import de.minestar.nightwatch.logging.ServerLogEntry;
 import de.minestar.nightwatch.server.ObservedServer;
 
@@ -19,12 +21,12 @@ public class ServerOverwatchThread extends Task<Void> {
     private ServerLoggingTask logTask;
 
     private BooleanProperty isAlive;
-    private List<ServerLogEntry> logList;
+    private ServerLog serverLog;
     private LinkedBlockingQueue<String> commandQueue;
 
-    public ServerOverwatchThread(ObservedServer server, List<ServerLogEntry> logList, LinkedBlockingQueue<String> commandQueue) {
+    public ServerOverwatchThread(ObservedServer server, ServerLog serverLog, LinkedBlockingQueue<String> commandQueue) {
         this.server = server;
-        this.logList = logList;
+        this.serverLog = serverLog;
         this.commandQueue = commandQueue;
         this.isAlive = new SimpleBooleanProperty(false);
     }
@@ -40,8 +42,12 @@ public class ServerOverwatchThread extends Task<Void> {
     }
 
     private void start() throws Exception {
-        this.serverProcess = server.createProcess().start();
-        this.logTask = new ServerLoggingTask(serverProcess.getInputStream(), logList);
+        ProcessBuilder processBuilder = server.createProcess();
+        this.serverLog.add(new ServerLogEntry(LocalDateTime.now(), "Nightwatch GUI", LogLevel.INFO, "Starting server. Parameters are " + processBuilder.command()));
+
+        this.serverProcess = processBuilder.start();
+
+        this.logTask = new ServerLoggingTask(serverProcess.getInputStream(), serverLog);
         Thread loggingTaskThread = new Thread(logTask, this.server.getName() + "_LoggingTask");
 
         this.commandTask = new ServerCommandTask(serverProcess.getOutputStream(), commandQueue);
@@ -71,9 +77,9 @@ public class ServerOverwatchThread extends Task<Void> {
         return isAlive;
     }
 
-    public void hardStop() {
+    public void kill() {
         System.out.println("Stop server forcibly!");
-        this.serverProcess.destroyForcibly();
+        this.serverProcess.destroy();
     }
 
 }

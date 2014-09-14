@@ -146,6 +146,7 @@ public class MainGUI extends Application {
 
     private void createServerTab(ObservedServer server) {
         ServerLogTab tab = new ServerLogTab(server);
+
         serverTabPane.getTabs().add(tab);
         serverTabPane.getSelectionModel().select(tab);
     }

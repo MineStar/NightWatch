@@ -31,7 +31,7 @@ public class DateTimeTextField extends TextField {
     public DateTimeTextField(LocalDateTime initialDate, DateTimeFormatter format) {
         this.setText(initialDate.format(format));
         this.dateTimeProperty = new SimpleObjectProperty<>(initialDate);
-        
+
         textProperty().addListener((observ, oldValue, newValue) -> {
             try {
                 dateTimeProperty.set(LocalDateTime.parse(getText(), format));

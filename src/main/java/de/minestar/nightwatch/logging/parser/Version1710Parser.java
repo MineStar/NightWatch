@@ -11,8 +11,7 @@ import de.minestar.nightwatch.logging.ServerLogEntry;
 
 /**
  * Parse 1.7 minecraft logs. <br>
- * The format is:
- * <code>HH:mm:ss [Source/LogLevel]: Message</code>
+ * The format is: <code>HH:mm:ss [Source/LogLevel]: Message</code>
  * 
  * @author Meldanor
  *
@@ -28,12 +27,12 @@ public class Version1710Parser extends LogEntryParser {
     public Version1710Parser() {
         super("\\[\\d{2}:\\d{2}:\\d{2}] \\[.+\\/.+\\]: .*");
     }
-    
+
     // Splitpattern. Regex = [\[\]] - split at brackets
     private Pattern SPLIT_PATTERN = Pattern.compile("[\\[\\]]");
 
     @Override
-    public ServerLogEntry parse(LocalDate date, String line)  {
+    public ServerLogEntry parse(LocalDate date, String line) {
 
         String[] split = SPLIT_PATTERN.split(line, 5);
         String timeString = split[TIME_POSITION];

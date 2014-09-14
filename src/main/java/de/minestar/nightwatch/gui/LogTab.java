@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.function.Predicate;
 
 import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.ListChangeListener;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.SelectionMode;
@@ -12,6 +13,8 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.BorderPane;
 import javafx.util.Callback;
 import de.minestar.nightwatch.logging.LogLevel;
@@ -24,6 +27,7 @@ public class LogTab extends Tab {
     protected ServerLog serverlog;
     protected Predicate<ServerLogEntry> currentFilter;
 
+    // TODO: Reimplement
 //    private StringProperty rowCountProperty;
 //    private StringProperty selectedRowCountProperty;
 
@@ -32,7 +36,7 @@ public class LogTab extends Tab {
         this.serverlog = serverLog;
         this.currentFilter = (e -> true);
         createContent();
-        this.logTable.getItems().addAll(serverLog.entries());
+        this.logTable.getItems().addAll(serverLog.unmodifielableEntries());
         this.setClosable(true);
     }
 
@@ -47,18 +51,18 @@ public class LogTab extends Tab {
         logTable.getStyleClass().add("log-table");
         logTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
-//        // Copy selected lines to clipboard
-//        logTable.getSelectionModel().getSelectedItems().addListener((ListChangeListener<ServerLogEntry>) c -> {
-//            selectedRowCountProperty.setValue(c.getList().size() + "");
-//            StringBuilder sBuilder = new StringBuilder();
-//            c.getList().parallelStream().forEachOrdered((ServerLogEntry l) -> {
-//                sBuilder.append(l.getTime().format(MainGUI.GERMAN_FORMAT)).append(' ').append(l.getLogLevel()).append(' ').append(l.getText()).append('\n');
-//            });
-//            ClipboardContent content = new ClipboardContent();
-//            content.putString(sBuilder.toString());
-//            Clipboard.getSystemClipboard().setContent(content);
-//
-//        });
+        // Copy selected lines to clipboard
+        logTable.getSelectionModel().getSelectedItems().addListener((ListChangeListener<ServerLogEntry>) c -> {
+//            selectedRowCountProperty.setValue(c.getList().size() + ""); // TODO: Reimplement
+            StringBuilder sBuilder = new StringBuilder();
+            c.getList().parallelStream().forEachOrdered((ServerLogEntry l) -> {
+                sBuilder.append(l.getTime().format(MainGUI.GERMAN_FORMAT)).append(' ').append(l.getLogLevel()).append(' ').append(l.getText()).append('\n');
+            });
+            ClipboardContent content = new ClipboardContent();
+            content.putString(sBuilder.toString());
+            Clipboard.getSystemClipboard().setContent(content);
+
+        });
 
         TableColumn<ServerLogEntry, String> timeColumn = new TableColumn<>("Time");
         timeColumn.setSortable(false);
@@ -129,7 +133,7 @@ public class LogTab extends Tab {
                 };
             }
         });
-
+        // TODO: Reimplement
 //        logTable.getItems().addListener((ListChangeListener<ServerLogEntry>) c -> rowCountProperty.setValue(c.getList().size() + ""));
 
         Pane.setCenter(logTable);
@@ -144,7 +148,7 @@ public class LogTab extends Tab {
     protected Node createBottom() {
         return null;
     }
-
+    // TODO: Reimplement
 //    private Node createStatusPane() {
 //
 //        FlowPane statusPane = new FlowPane(Orientation.HORIZONTAL, 10, 0);

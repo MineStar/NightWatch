@@ -44,7 +44,7 @@ public class ServerCommandTask extends Task<Void> {
             serverInput.flush();
         }
     }
-    
+
     @Override
     protected void cancelled() {
         try {

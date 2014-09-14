@@ -94,13 +94,13 @@ public class FilterPane extends FlowPane {
         minBinding.addListener((observ, oldVal, newVal) -> {
             this.minDate = newVal;
             this.fromDateTextField.setText(newVal.format(MainGUI.GERMAN_FORMAT));
+
         });
         maxBinding.addListener((observ, oldVal, newVal) -> {
             this.maxDate = newVal;
             this.toDateTextField.setText(newVal.format(MainGUI.GERMAN_FORMAT));
         });
     }
-
     public class LogFilter implements Predicate<ServerLogEntry>, ObservableValue<LogFilter> {
 
         private List<ChangeListener<? super LogFilter>> observers;

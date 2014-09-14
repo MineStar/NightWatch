@@ -85,11 +85,11 @@ public class ServerControlPane extends FlowPane {
         this.shutdownButton.setOnAction(e -> onShutdownServer(parent));
         this.shutdownButton.disableProperty().bind(isRunning.not());
 
-        this.stopButton = new Button("Stop", loadIcon(ICON_BUTTON_STOP));
-        this.stopButton.getStyleClass().add("stopButton");
+        this.stopButton = new Button("Kill", loadIcon(ICON_BUTTON_STOP));
+        this.stopButton.getStyleClass().add("killButton");
         this.stopButton.setNodeOrientation(NodeOrientation.RIGHT_TO_LEFT);
         this.stopButton.disableProperty().bind(isRunning.not());
-        this.stopButton.setOnAction(e -> onStopServer(parent));
+        this.stopButton.setOnAction(e -> onKillServer(parent));
 
         return Arrays.asList(startButton, shutdownButton, stopButton);
 
@@ -141,12 +141,12 @@ public class ServerControlPane extends FlowPane {
         parent.shutdownServer();
     }
 
-    private void onStopServer(ServerLogTab parent) {
+    private void onKillServer(ServerLogTab parent) {
         Action result = Dialogs.create().style(DialogStyle.NATIVE).message("Warning: Possible loose of data!\nStop the server process(unsafe!)?").showConfirm();
         if (result != Dialog.Actions.YES)
             return;
 
-        parent.shutdownServer();
+        parent.killServer();
     }
 
     private void initiateRestart(ServerLogTab serverLogTab) {

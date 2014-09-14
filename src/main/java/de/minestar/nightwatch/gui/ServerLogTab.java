@@ -2,10 +2,7 @@ package de.minestar.nightwatch.gui;
 
 import java.time.LocalDateTime;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.stream.Collectors;
 
-import javafx.application.Platform;
-import javafx.collections.ListChangeListener;
 import javafx.scene.Node;
 import javafx.scene.control.TextField;
 
@@ -29,13 +26,10 @@ public class ServerLogTab extends LogTab {
 
     public ServerLogTab(ObservedServer server) {
         super(server.getName(), new ServerLog());
-        this.getServerlog().entries().addListener((ListChangeListener<ServerLogEntry>) c -> {
-            while (c.next()) {
-                if (c.wasAdded()) {
-                    Platform.runLater(() -> {
-                        this.logTable.getItems().addAll(c.getAddedSubList().stream().filter(currentFilter).collect(Collectors.<ServerLogEntry> toList()));
-                    });
-                }
+        this.getServerlog().registerSynchronousConsumer((entry) -> {
+            if (currentFilter.test(entry)) {
+                System.out.println(entry);
+                this.logTable.getItems().add(entry);
             }
         });
 
@@ -60,7 +54,7 @@ public class ServerLogTab extends LogTab {
         consoleInput.getStyleClass().add("command-input");
         consoleInput.setOnAction(e -> {
             this.commandQueue.add(consoleInput.getText());
-            this.serverlog.entries().add(new ServerLogEntry(LocalDateTime.now(), "Console", LogLevel.ALL, consoleInput.getText()));
+            this.serverlog.add(new ServerLogEntry(LocalDateTime.now(), "Console", LogLevel.ALL, consoleInput.getText()));
             consoleInput.clear();
         });
 
@@ -74,7 +68,7 @@ public class ServerLogTab extends LogTab {
 
     public void startServer() {
         this.commandQueue = new LinkedBlockingQueue<>();
-        this.serverOverWatchThread = new ServerOverwatchThread(this.server, this.serverlog.entries(), this.commandQueue);
+        this.serverOverWatchThread = new ServerOverwatchThread(this.server, this.serverlog, this.commandQueue);
         Thread thread = new Thread(this.serverOverWatchThread, this.server.getName() + "_Overwatch");
         thread.start();
     }
@@ -85,8 +79,8 @@ public class ServerLogTab extends LogTab {
         this.commandQueue = null;
     }
 
-    protected void stopServer() {
-        this.serverOverWatchThread.hardStop();
+    protected void killServer() {
+        this.serverOverWatchThread.kill();
     }
 
     public ObservedServer getServer() {

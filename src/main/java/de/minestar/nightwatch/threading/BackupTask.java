@@ -45,8 +45,7 @@ public class BackupTask extends Task<Void> {
         File targetFile = new File(backupDirectory, server.getName() + "_" + timestampString + ".zip");
         ZipFileVisitor.zipDirWithProgress(source, targetFile, procededFiles);
         updateMessage("Backup complete");
-        
-        
+
         return null;
     }
 
