@@ -1,4 +1,4 @@
-package de.minestar.nightwatch.gui;
+package de.minestar.nightwatch.gui.dialog;
 
 import javafx.stage.Stage;
 import de.minestar.nightwatch.server.ObservedJava7Server;

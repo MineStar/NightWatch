@@ -78,7 +78,6 @@ public class ServerOverwatchThread extends Task<Void> {
     }
 
     public void kill() {
-        System.out.println("Stop server forcibly!");
         this.serverProcess.destroy();
     }
 

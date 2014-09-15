@@ -1,4 +1,4 @@
-package de.minestar.nightwatch.gui;
+package de.minestar.nightwatch.gui.dialog;
 
 import java.io.File;
 import java.util.Optional;

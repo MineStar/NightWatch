@@ -42,11 +42,13 @@ public class BackupTask extends Task<Void> {
         });
 
         String timestampString = LocalDateTime.now().format(BACKUP_TIME_FORMAT);
-        File targetFile = new File(backupDirectory, server.getName() + "_" + timestampString + ".zip");
+        String fileName = server.getName() + "_" + timestampString;
+        File targetFile = new File(backupDirectory, fileName+".incomplete");
         ZipFileVisitor.zipDirWithProgress(source, targetFile, procededFiles);
+        targetFile.renameTo(new File(backupDirectory, fileName + ".zip"));
         updateMessage("Backup complete");
+        
 
         return null;
     }
-
 }

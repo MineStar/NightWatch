@@ -1,13 +1,10 @@
-package de.minestar.nightwatch.gui;
+package de.minestar.nightwatch.gui.dialog;
 
 import javafx.application.Platform;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.concurrent.Task;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.HBox;
@@ -18,18 +15,20 @@ import org.controlsfx.control.action.Action;
 import org.controlsfx.dialog.Dialog;
 import org.controlsfx.dialog.DialogStyle;
 
+/**
+ * Dialog showing a restart
+ */
 public class RestartDialog extends Dialog {
 
-    private BooleanProperty wasCanceled;
+    private static final String DIALOG_TITLE = "Restarting server";
 
     private static final int STEPS = 5;
 
-    private Task<Boolean> restartTask;
+    private Task<Void> restartTask;
 
     public RestartDialog(Stage stage) {
-        super(stage, "Restarting server", false, DialogStyle.NATIVE);
+        super(stage, DIALOG_TITLE, false, DialogStyle.NATIVE);
         this.setClosable(false);
-        this.wasCanceled = new SimpleBooleanProperty(false);
         setContent(createContent());
     }
 
@@ -43,51 +42,44 @@ public class RestartDialog extends Dialog {
         infoPane.setAlignment(Pos.CENTER);
         vBox.getChildren().add(infoPane);
 
-        ProgressBar progressBar = new ProgressBar();
-        vBox.getChildren().add(progressBar);
+        ProgressBar progress = new ProgressBar();
+        vBox.getChildren().add(progress);
 
-        restartTask = new Task<Boolean>() {
-            protected Boolean call() throws Exception {
-                updateValue(false);
+        restartTask = new Task<Void>() {
+            protected Void call() throws Exception {
                 for (int i = 0; i <= STEPS; ++i) {
                     updateMessage("" + (STEPS - i));
-
+                    updateProgress(i, STEPS);
                     Thread.sleep(1000);
                 }
                 // Close the dialog
                 Platform.runLater(() -> setResult(Dialog.Actions.OK));
-                return false;
+                return null;
             };
 
             @Override
             protected void cancelled() {
-                updateValue(true);
                 // Close the dialog
                 Platform.runLater(() -> setResult(Dialog.Actions.CANCEL));
                 super.cancelled();
             }
         };
+        progress.progressProperty().bind(restartTask.progressProperty());
 
         timeLabel.textProperty().bind(restartTask.messageProperty());
-        wasCanceled.bind(restartTask.valueProperty());
 
-        Button cancelButton = new Button("Cancel");
-        cancelButton.setOnAction(e -> restartTask.cancel(true));
-        vBox.getChildren().add(cancelButton);
-
+        getActions().setAll(Actions.CANCEL);
         return vBox;
-
     }
 
     @Override
     public Action show() {
         Thread thread = new Thread(restartTask);
         thread.start();
-        return super.show();
-    }
+        Action result = super.show();
+        if (result == Actions.CANCEL)
+            this.restartTask.cancel(true);
 
-    public BooleanProperty wasCanceledProperty() {
-        return wasCanceled;
+        return result;
     }
-
 }

@@ -28,7 +28,6 @@ public class ServerLogTab extends LogTab {
         super(server.getName(), new ServerLog());
         this.getServerlog().registerSynchronousConsumer((entry) -> {
             if (currentFilter.test(entry)) {
-                System.out.println(entry);
                 this.logTable.getItems().add(entry);
             }
         });

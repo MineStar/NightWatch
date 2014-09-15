@@ -22,12 +22,15 @@ import javafx.scene.layout.FlowPane;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 
-import org.controlsfx.control.action.Action;
-import org.controlsfx.dialog.Dialog;
+import org.controlsfx.dialog.Dialog.Actions;
 import org.controlsfx.dialog.DialogStyle;
 import org.controlsfx.dialog.Dialogs;
 
 import de.minestar.nightwatch.core.Core;
+import de.minestar.nightwatch.gui.dialog.BackupDialog;
+import de.minestar.nightwatch.gui.dialog.DialogsUtil;
+import de.minestar.nightwatch.gui.dialog.RestartDialog;
+import de.minestar.nightwatch.gui.dialog.ServerOptionsDialog;
 import de.minestar.nightwatch.server.ObservedServer;
 import de.minestar.nightwatch.threading.BackupTask;
 import de.minestar.nightwatch.threading.RestoreBackupTask;
@@ -97,10 +100,10 @@ public class ServerControlPane extends FlowPane {
 
     private void onStartServer(ServerLogTab parent) {
 
-        Action result = Dialogs.create().style(DialogStyle.NATIVE).message("Starting server?").showConfirm();
-        if (result != Dialog.Actions.YES)
-            return;
-        startServer(parent);
+        Dialogs dialog = DialogsUtil.createOkCancelDialog("Start server " + parent.getServer().getName() + "?");
+        if (dialog.showConfirm() == Actions.OK)
+            startServer(parent);
+
     }
 
     private void startServer(ServerLogTab serverLogTab) {
@@ -134,33 +137,22 @@ public class ServerControlPane extends FlowPane {
     }
 
     private void onShutdownServer(ServerLogTab parent) {
-        Action result = Dialogs.create().style(DialogStyle.NATIVE).message("Safely shutting server down?").showConfirm();
-        if (result != Dialog.Actions.YES)
-            return;
-
-        parent.shutdownServer();
+        Dialogs dialog = DialogsUtil.createOkCancelDialog("Safely initiate server stop?");
+        if (dialog.showConfirm() == Actions.OK)
+            parent.shutdownServer();
     }
 
     private void onKillServer(ServerLogTab parent) {
-        Action result = Dialogs.create().style(DialogStyle.NATIVE).message("Warning: Possible loose of data!\nStop the server process(unsafe!)?").showConfirm();
-        if (result != Dialog.Actions.YES)
-            return;
-
-        parent.killServer();
+        Dialogs dialog = DialogsUtil.createOkCancelDialog("Careful!\nKilling the server can cause data loose!");
+        if (dialog.showConfirm() == Actions.OK)
+            parent.killServer();
     }
 
     private void initiateRestart(ServerLogTab serverLogTab) {
 
-        RestartDialog di = new RestartDialog(MainGUI.stage);
-        Action show = di.show();
-        if (show == Dialog.Actions.OK) {
+        RestartDialog dialog = new RestartDialog(MainGUI.stage);
+        if (dialog.show() != Actions.CANCEL)
             startServer(serverLogTab);
-            // do restart
-        } else if (show == Dialog.Actions.CANCEL) {
-            // Do no restart
-            return;
-
-        }
     }
 
     private Node createOpenDirectoryButton(ServerLogTab parent) {
@@ -198,9 +190,8 @@ public class ServerControlPane extends FlowPane {
 
         if (Core.mainConfig.backupFolder().isEmpty().get()) {
 
-            Action result = Dialogs.create().style(DialogStyle.NATIVE).message("You haven't select a backup folder yet. Please select one!").showConfirm();
-            System.out.println(result);
-            if (result != Dialog.Actions.YES)
+            Dialogs dialog = DialogsUtil.createOkCancelDialog("You havent't select a backup folder. Please select one!");
+            if (dialog.showConfirm() != Actions.OK)
                 return;
 
             DirectoryChooser dirChooser = new DirectoryChooser();
@@ -215,17 +206,17 @@ public class ServerControlPane extends FlowPane {
         startBackup(backupTask);
 
     }
-
     private void startBackup(BackupTask backupTask) {
-        Thread backupThread = new Thread(backupTask, "BackupThread");
-        Dialogs.create().style(DialogStyle.NATIVE).showWorkerProgress(backupTask);
-        backupTask.exceptionProperty().addListener((observ, oldVal, newVal) -> Dialogs.create().style(DialogStyle.NATIVE).message("Error while creating backup!").showException(newVal));
-        backupThread.start();
+        BackupDialog dialog = new BackupDialog(MainGUI.stage, backupTask);
+        backupTask.exceptionProperty().addListener((observ, oldVal, newVal) -> {
+            Dialogs.create().style(DialogStyle.NATIVE).message("Error while creating backup!").showException(newVal);
+        });
+        dialog.show();
     }
 
     private void onStartRestoreBackup(ServerLogTab parent) {
-        Action result = Dialogs.create().style(DialogStyle.NATIVE).message("This will delete ALL files in the server folder!").showWarning();
-        if (result != Dialog.Actions.OK)
+        Dialogs dialog = DialogsUtil.createOkCancelDialog("This will delete ALL files in the server folder! Are you sure?");
+        if (dialog.showWarning() != Actions.OK)
             return;
 
         FileChooser fileChooser = new FileChooser();
@@ -235,10 +226,12 @@ public class ServerControlPane extends FlowPane {
             return;
 
         ObservedServer server = parent.getServer();
+
         // Check if the backup was from this server
         if (!backupFile.getName().startsWith(server.getName())) {
-            result = Dialogs.create().style(DialogStyle.NATIVE).message("This may be not a backup of this server\n" + backupFile.getName() + "\nAre you sure to use this?!").showConfirm();
-            if (result != Dialog.Actions.OK)
+            String message = "The choosen backup '" + backupFile.getName() + "' doesn't match the server name '" + server.getName() + "'. Are you sure?";
+            dialog = DialogsUtil.createOkCancelDialog(message);
+            if (dialog.showWarning() != Actions.OK)
                 return;
         }
 

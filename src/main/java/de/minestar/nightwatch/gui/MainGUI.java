@@ -21,18 +21,20 @@ import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
-import org.controlsfx.control.action.Action;
-import org.controlsfx.dialog.Dialog;
-import org.controlsfx.dialog.DialogStyle;
+import org.controlsfx.dialog.Dialog.Actions;
 import org.controlsfx.dialog.Dialogs;
 
 import de.minestar.nightwatch.core.Core;
+import de.minestar.nightwatch.gui.dialog.CreateServerDialog;
+import de.minestar.nightwatch.gui.dialog.DialogsUtil;
 import de.minestar.nightwatch.logging.LogReader;
 import de.minestar.nightwatch.logging.ServerLog;
 import de.minestar.nightwatch.logging.ServerLogEntry;
 import de.minestar.nightwatch.server.ObservedServer;
 
 public class MainGUI extends Application {
+
+    private static final String APPLICATION_ICON = "/icons/minestar_logo_32.png";
 
     public static final DateTimeFormatter GERMAN_FORMAT = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM);
 
@@ -59,19 +61,19 @@ public class MainGUI extends Application {
 
         Scene scene = new Scene(bPane);
 
-        stage.getIcons().add(new Image(getClass().getResourceAsStream("/icons/minestar_logo_32.png")));
+        stage.getIcons().add(new Image(getClass().getResourceAsStream(APPLICATION_ICON)));
         stage.setOnCloseRequest(e -> {
             // Prevent closing server manager while one or more server are
             // running
             if (Core.runningServers > 0) {
-                Dialogs.create().style(DialogStyle.NATIVE).message("Can't close program while servers are running!").showWarning();
+                DialogsUtil.createOkCancelDialog("Can't close progam while servers are running!").showWarning();
                 e.consume();
-
             } else {
                 // Ask if the user really want to close the server
-                Action result = Dialogs.create().style(DialogStyle.NATIVE).message("Exit program?").showConfirm();
-                if (result != Dialog.Actions.YES)
+                Dialogs dialog = DialogsUtil.createOkCancelDialog("Exit program?");
+                if (dialog.showConfirm() != Actions.OK) {
                     e.consume();
+                }
             }
         });
         stage.setScene(scene);
