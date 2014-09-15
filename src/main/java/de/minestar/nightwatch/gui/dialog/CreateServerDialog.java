@@ -15,9 +15,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Control;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.scene.control.Tooltip;
 import javafx.scene.layout.GridPane;
-import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;
@@ -25,8 +23,6 @@ import javafx.stage.Stage;
 import org.controlsfx.control.action.Action;
 import org.controlsfx.dialog.Dialog;
 import org.controlsfx.dialog.DialogStyle;
-import org.controlsfx.glyphfont.FontAwesome;
-import org.controlsfx.glyphfont.FontAwesome.Glyph;
 import org.controlsfx.validation.ValidationResult;
 import org.controlsfx.validation.ValidationSupport;
 import org.controlsfx.validation.Validator;
@@ -70,7 +66,7 @@ public class CreateServerDialog extends Dialog {
         serverNameField.setEditable(true);
         this.serverName = serverNameField.textProperty();
         val.registerValidator(serverNameField, Validator.createEmptyValidator("Must specify a server name!"));
-        pane.addRow(row++, new Label("Name"), serverNameField, createToolTipNode("The unique name of the server"));
+        pane.addRow(row++, new Label("Name"), serverNameField, DialogsUtil.createToolTipNode("The unique name of the server"));
 
         TextField pathTextField = new TextField();
         this.serverFile = new SimpleObjectProperty<>();
@@ -90,15 +86,15 @@ public class CreateServerDialog extends Dialog {
         serverFile.set(new File(""));
         pathTextField.setPrefWidth(300);
         val.registerValidator(pathTextField, Validator.createEmptyValidator("Must specify the path to server binary!"));
-        pane.addRow(row++, new Label("Server Path"), pathTextField, createToolTipNode("The path to the server program"));
+        pane.addRow(row++, new Label("Server Path"), pathTextField, DialogsUtil.createToolTipNode("The path to the server program"));
 
         ComboBox<String> minMemoryBox = createMemoryComboBox(val);
         this.minMemory = minMemoryBox.valueProperty();
-        pane.addRow(row++, new Label("MinMemory"), minMemoryBox, createToolTipNode("Amount of memory the server starts with"));
+        pane.addRow(row++, new Label("MinMemory"), minMemoryBox, DialogsUtil.createToolTipNode("Amount of memory the server starts with"));
 
         ComboBox<String> maxMemoryBox = createMemoryComboBox(val);
         this.maxMemory = maxMemoryBox.valueProperty();
-        pane.addRow(row++, new Label("MaxMemory"), maxMemoryBox, createToolTipNode("Amount of memeory the server can use until extensive garbage collection"));
+        pane.addRow(row++, new Label("MaxMemory"), maxMemoryBox, DialogsUtil.createToolTipNode("Amount of memeory the server can use until extensive garbage collection"));
 
         CheckBox isJava7Box = new CheckBox();
         isJava7Box.selectedProperty().addListener((observ, oldVal, newVal) -> {
@@ -115,28 +111,28 @@ public class CreateServerDialog extends Dialog {
             }
         });
         this.isJava7 = isJava7Box.selectedProperty();
-        pane.addRow(row++, new Label("Java7"), isJava7Box, createToolTipNode("Use Java7 instead Java8. Forge has problems with Java8"));
+        pane.addRow(row++, new Label("Java7"), isJava7Box, DialogsUtil.createToolTipNode("Use Java7 instead Java8. Forge has problems with Java8"));
 
         ComboBox<String> permGenSizeBox = new ComboBox<>(FXCollections.observableArrayList("128M", "256M", "512M"));
         permGenSizeBox.setEditable(true);
         permGenSizeBox.getSelectionModel().select("256M");
         permGenSizeBox.disableProperty().bind(isJava7Box.selectedProperty().not());
         this.permGenSize = permGenSizeBox.valueProperty();
-        pane.addRow(row++, new Label("PermGenSize"), permGenSizeBox, createToolTipNode("The more mods are used the higher this parameter should be."));
+        pane.addRow(row++, new Label("PermGenSize"), permGenSizeBox, DialogsUtil.createToolTipNode("The more mods are used the higher this parameter should be."));
 
         CheckBox doAutomaticBackups = new CheckBox();
         this.autoBackup = doAutomaticBackups.selectedProperty();
         this.autoBackup.set(true);
-        pane.addRow(row++, new Label("Auto-Backup"), doAutomaticBackups, createToolTipNode("Create automatic backups of the server. Currently this happens at servers shutdown"));
+        pane.addRow(row++, new Label("Auto-Backup"), doAutomaticBackups, DialogsUtil.createToolTipNode("Create automatic backups of the server. Currently this happens at servers shutdown"));
 
         CheckBox doAutomaticRestarts = new CheckBox();
         this.autoRestart = doAutomaticRestarts.selectedProperty();
         this.autoRestart.set(true);
-        pane.addRow(row++, new Label("Auto-Restart"), doAutomaticRestarts, createToolTipNode("Automatically restarts the server after shutdown. Do not restart if the button shutdown is pressed"));
+        pane.addRow(row++, new Label("Auto-Restart"), doAutomaticRestarts, DialogsUtil.createToolTipNode("Automatically restarts the server after shutdown. Do not restart if the button shutdown is pressed"));
 
         TextField vmOptionsField = new TextField();
         vmOptions = vmOptionsField.textProperty();
-        pane.addRow(row++, new Label("VM Options"), vmOptionsField, createToolTipNode("Additional VM option the server starts with. You need to know what you do!"));
+        pane.addRow(row++, new Label("VM Options"), vmOptionsField, DialogsUtil.createToolTipNode("Additional VM option the server starts with. You need to know what you do!"));
 
         Actions.OK.disabledProperty().bind(val.invalidProperty());
 
@@ -164,16 +160,12 @@ public class CreateServerDialog extends Dialog {
         return t;
     }
 
-    private Node createToolTipNode(String text) {
-        Node n = new FontAwesome().fontColor(Color.ORANGE).create(Glyph.INFO_SIGN.getChar());
-
-        Tooltip.install(n, new Tooltip(text));
-        return n;
-    }
-
     public Optional<ObservedServer> startDialog() {
 
         Action action = show();
+        // Disable the validator
+        Actions.OK.disabledProperty().unbind();
+        Actions.OK.disabledProperty().set(false);
         if (action == Actions.OK) {
             if (this.isJava7.not().get()) {
                 return Optional.of(new ObservedServer(this.serverName.get(), this.serverFile.get(), this.minMemory.get(), this.maxMemory.get(), this.vmOptions.get(), this.autoBackup.get(), this.autoRestart.get()));

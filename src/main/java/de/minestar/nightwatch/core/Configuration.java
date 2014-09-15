@@ -5,6 +5,7 @@ import java.lang.reflect.Field;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
 
@@ -21,7 +22,7 @@ public class Configuration {
         return result;
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private static void addChangeListenerToFields(final File configFile, final Configuration config) throws Exception {
         // Use reflection to assign a change listener to all observable
         // properties. If the properties changes, the configuration is written
@@ -43,8 +44,18 @@ public class Configuration {
         }
     }
 
+    // Empty constructor for serialization
     private Configuration() {
-        // Empty constructor for serialization
+        defaultValues();
+    }
+    
+    // ********************************
+    // * ADD HERE THE DEFAULT VALUES **
+    // ********************************
+
+    private void defaultValues() {
+        backupDelay.set(5);
+        restartDelay.set(5);
     }
 
     // ********************************
@@ -63,5 +74,19 @@ public class Configuration {
     @JsonGetter
     public SimpleStringProperty backupFolder() {
         return backupFolder;
+    }
+
+    private SimpleIntegerProperty restartDelay = new SimpleIntegerProperty();
+
+    @JsonGetter
+    public SimpleIntegerProperty restartDelay() {
+        return restartDelay;
+    }
+
+    private SimpleIntegerProperty backupDelay = new SimpleIntegerProperty();
+
+    @JsonGetter
+    public SimpleIntegerProperty backupDelay() {
+        return backupDelay;
     }
 }

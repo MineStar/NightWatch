@@ -27,6 +27,7 @@ import org.controlsfx.dialog.Dialogs;
 import de.minestar.nightwatch.core.Core;
 import de.minestar.nightwatch.gui.dialog.CreateServerDialog;
 import de.minestar.nightwatch.gui.dialog.DialogsUtil;
+import de.minestar.nightwatch.gui.dialog.GeneralOptionsDialog;
 import de.minestar.nightwatch.logging.LogReader;
 import de.minestar.nightwatch.logging.ServerLog;
 import de.minestar.nightwatch.logging.ServerLogEntry;
@@ -96,6 +97,8 @@ public class MainGUI extends Application {
 
         MenuItem optionsMenu = new MenuItem("Options");
         optionsMenu.setAccelerator(KeyCombination.keyCombination("CTRL+O"));
+        optionsMenu.setOnAction(e -> onOpenOption());
+
         MenuItem closeMenu = new MenuItem("Exit");
         closeMenu.setAccelerator(KeyCombination.keyCombination("ALT+F4"));
         fileMenu.getItems().addAll(createServerMenu, openLogMenu, optionsMenu, closeMenu);
@@ -110,6 +113,11 @@ public class MainGUI extends Application {
 
         return menuBar;
 
+    }
+
+    private void onOpenOption() {
+        GeneralOptionsDialog optionsDialog = new GeneralOptionsDialog(stage);
+        optionsDialog.show();
     }
 
     private void onOpenLogFile() {

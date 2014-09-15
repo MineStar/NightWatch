@@ -1,6 +1,7 @@
 package de.minestar.nightwatch.gui.dialog;
 
 import javafx.application.Platform;
+import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.concurrent.Task;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -15,13 +16,14 @@ import org.controlsfx.control.action.Action;
 import org.controlsfx.dialog.Dialog;
 import org.controlsfx.dialog.DialogStyle;
 
+import de.minestar.nightwatch.core.Core;
 import de.minestar.nightwatch.threading.BackupTask;
 
 public class BackupDialog extends Dialog {
 
     private static final String DIALOG_TITLE = "Backup server";
 
-    private static final int STEPS = 5;
+    private static final ReadOnlyIntegerProperty STEPS = Core.mainConfig.backupDelay();
 
     private Task<Void> restartTask;
     private BackupTask backupTask;
@@ -49,9 +51,10 @@ public class BackupDialog extends Dialog {
 
         restartTask = new Task<Void>() {
             protected Void call() throws Exception {
-                for (int i = 0; i <= STEPS; ++i) {
-                    updateMessage("" + (STEPS - i));
-                    updateProgress(i, STEPS);
+                int steps = STEPS.get();
+                for (int i = 0; i <= steps; ++i) {
+                    updateMessage("" + (steps - i));
+                    updateProgress(i, steps);
                     Thread.sleep(1000);
                 }
                 // Initiate backup task
