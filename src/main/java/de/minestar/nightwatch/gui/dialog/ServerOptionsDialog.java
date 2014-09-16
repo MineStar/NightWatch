@@ -8,8 +8,8 @@ public class ServerOptionsDialog extends CreateServerDialog {
 
     public ServerOptionsDialog(Stage stage, ObservedServer currentServer) {
         super(stage);
-        this.autoBackup.set(currentServer.doAutomaticBackups());
-        this.autoRestart.set(currentServer.doAutoRestarts());
+        this.autoBackup.set(currentServer.doAutoBackupOnShutdown());
+        this.autoRestart.set(currentServer.doAutoRestartOnShutdown());
         this.maxMemory.set(currentServer.getMaxMemory());
         this.minMemory.set(currentServer.getMinMemory());
 

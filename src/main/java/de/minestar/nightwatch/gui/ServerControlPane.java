@@ -114,18 +114,18 @@ public class ServerControlPane extends FlowPane {
             if (newVal == false) {
                 this.isRunning.set(false);
                 ObservedServer server = serverLogTab.getServer();
-                if (server.doAutomaticBackups()) {
+                if (server.doAutoBackupOnShutdown()) {
                     BackupTask backupTask = new BackupTask(server, new File(Core.mainConfig.backupFolder().get()));
                     // wait for backup task has ended to initiate eventual
                     // restart
-                    if (server.doAutoRestarts()) {
+                    if (server.doAutoRestartOnShutdown()) {
                         backupTask.setOnSucceeded(e -> {
                             // Have to run it synchronous
                             Platform.runLater(() -> initiateRestart(serverLogTab));
                         });
                     }
                     this.startBackup(backupTask);
-                } else if (server.doAutoRestarts()) {
+                } else if (server.doAutoRestartOnShutdown()) {
                     initiateRestart(serverLogTab);
 
                 }

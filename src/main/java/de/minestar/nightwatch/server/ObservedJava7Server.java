@@ -13,8 +13,11 @@ public class ObservedJava7Server extends ObservedServer {
         // For serialization
     }
 
-    public ObservedJava7Server(String name, File serverFile, String minMemory, String maxMemory, String vmOptions, boolean automaticBackups, boolean doAutoRestarts, String permGenSize) {
-        super(name, serverFile, minMemory, maxMemory, vmOptions, automaticBackups, doAutoRestarts);
+    
+
+
+    public ObservedJava7Server(String name, File serverFile, String minMemory, String maxMemory, String vmOptions, boolean autoBackupOnShutdown, boolean autoRestartOnShutdown, String permGenSize) {
+        super(name, serverFile, minMemory, maxMemory, vmOptions, autoBackupOnShutdown, autoRestartOnShutdown);
         this.permGenSize = permGenSize;
     }
 

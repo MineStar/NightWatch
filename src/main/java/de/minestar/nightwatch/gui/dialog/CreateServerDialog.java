@@ -14,6 +14,7 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Control;
 import javafx.scene.control.Label;
+import javafx.scene.control.Separator;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.stage.FileChooser;
@@ -88,6 +89,18 @@ public class CreateServerDialog extends Dialog {
         val.registerValidator(pathTextField, Validator.createEmptyValidator("Must specify the path to server binary!"));
         pane.addRow(row++, new Label("Server Path"), pathTextField, DialogsUtil.createToolTipNode("The path to the server program"));
 
+        CheckBox doAutomaticBackups = new CheckBox();
+        this.autoBackup = doAutomaticBackups.selectedProperty();
+        this.autoBackup.set(true);
+        pane.addRow(row++, new Label("Shutdown Backup"), doAutomaticBackups, DialogsUtil.createToolTipNode("Create an automatic backup of the server at shutdown."));
+
+        CheckBox doAutomaticRestarts = new CheckBox();
+        this.autoRestart = doAutomaticRestarts.selectedProperty();
+        this.autoRestart.set(true);
+        pane.addRow(row++, new Label("Shutdown Restart"), doAutomaticRestarts, DialogsUtil.createToolTipNode("Automatically restarts the server after shutdown."));
+        
+        pane.add(new Separator(), 0, row++, 3, 1);
+
         ComboBox<String> minMemoryBox = createMemoryComboBox(val);
         this.minMemory = minMemoryBox.valueProperty();
         pane.addRow(row++, new Label("MinMemory"), minMemoryBox, DialogsUtil.createToolTipNode("Amount of memory the server starts with"));
@@ -119,16 +132,6 @@ public class CreateServerDialog extends Dialog {
         permGenSizeBox.disableProperty().bind(isJava7Box.selectedProperty().not());
         this.permGenSize = permGenSizeBox.valueProperty();
         pane.addRow(row++, new Label("PermGenSize"), permGenSizeBox, DialogsUtil.createToolTipNode("The more mods are used the higher this parameter should be."));
-
-        CheckBox doAutomaticBackups = new CheckBox();
-        this.autoBackup = doAutomaticBackups.selectedProperty();
-        this.autoBackup.set(true);
-        pane.addRow(row++, new Label("Auto-Backup"), doAutomaticBackups, DialogsUtil.createToolTipNode("Create automatic backups of the server. Currently this happens at servers shutdown"));
-
-        CheckBox doAutomaticRestarts = new CheckBox();
-        this.autoRestart = doAutomaticRestarts.selectedProperty();
-        this.autoRestart.set(true);
-        pane.addRow(row++, new Label("Auto-Restart"), doAutomaticRestarts, DialogsUtil.createToolTipNode("Automatically restarts the server after shutdown. Do not restart if the button shutdown is pressed"));
 
         TextField vmOptionsField = new TextField();
         vmOptions = vmOptionsField.textProperty();

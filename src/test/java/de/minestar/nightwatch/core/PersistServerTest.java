@@ -39,8 +39,8 @@ public class PersistServerTest {
         assertEquals(new File("path/to/server").getAbsolutePath(), observedServerOne.getServerFile().getAbsolutePath());
         assertEquals("1024MB", observedServerOne.getMinMemory());
         assertEquals("2G", observedServerOne.getMaxMemory());
-        assertTrue(observedServerOne.doAutomaticBackups());
-        assertFalse(observedServerOne.doAutoRestarts());
+        assertTrue(observedServerOne.doAutoBackupOnShutdown());
+        assertFalse(observedServerOne.doAutoRestartOnShutdown());
         assertEquals("-XX:+UseParNewGC", observedServerOne.getVmOptions());
 
         ObservedServer observedServerTwo = registeredServers.get("java7server");
@@ -50,8 +50,8 @@ public class PersistServerTest {
         assertEquals("4G", observedServerTwo.getMinMemory());
         assertEquals("8G", observedServerTwo.getMaxMemory());
         assertEquals("256MB", ((ObservedJava7Server) observedServerTwo).getPermGenSize());
-        assertFalse(observedServerTwo.doAutomaticBackups());
-        assertTrue(observedServerTwo.doAutoRestarts());
+        assertFalse(observedServerTwo.doAutoBackupOnShutdown());
+        assertTrue(observedServerTwo.doAutoRestartOnShutdown());
         assertEquals("-XX:+UseG1GC", observedServerTwo.getVmOptions());
     }
 }

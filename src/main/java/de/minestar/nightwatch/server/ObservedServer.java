@@ -5,39 +5,68 @@ import java.lang.ProcessBuilder.Redirect;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
+
+import de.minestar.nightwatch.gui.dialog.ServerOptionsDialog;
 @JsonTypeInfo(use = Id.CLASS, include = As.PROPERTY, property = "class")
 public class ObservedServer {
 
     private String name;
-    private String minMemory;
-    private String maxMemory;
 
     private File directory;
     private File serverFile;
-    private boolean doAutomaticBackups;
-    private boolean doAutoRestarts;
 
+    @JsonProperty
+    private boolean autoBackupOnShutdown;
+    @JsonProperty
+    private boolean autoRestartOnShutdown;
+
+    private String minMemory;
+    private String maxMemory;
     private String vmOptions;
 
     protected ObservedServer() {
         // For serialization
     }
 
-    public ObservedServer(String name, File serverFile, String minMemory, String maxMemory, String vmOptions, boolean automaticBackups, boolean doAutoRestarts) {
+    /**
+     * Creates an Observed Server holding all necessary information to start and control the server.
+     * 
+     * @param name
+     *            The unique name of the server.
+     * @param serverFile
+     *            The executable file to start the server, for example minecraft-server.jar.
+     * @param minMemory
+     *            The minimum heap memory for the server.
+     * @param maxMemory
+     *            The maximum heap memory for the server.
+     * @param vmOptions
+     *            Additional options not covered by the program, for example the type of garbage collector to use.
+     * @param autoBackupOnShutdown
+     *            If set to <code>true</code> it will automatically do backups of the server after the shutdown.
+     * @param autoRestartOnShutdown
+     *            If set to <code>true</code> it will automatically restart after a shutdown.
+     */
+    public ObservedServer(String name, File serverFile, String minMemory, String maxMemory, String vmOptions, boolean autoBackupOnShutdown, boolean autoRestartOnShutdown) {
         this.name = name;
         this.serverFile = serverFile;
         this.directory = serverFile.getParentFile();
         this.minMemory = minMemory;
         this.maxMemory = maxMemory;
         this.vmOptions = vmOptions;
-        this.doAutomaticBackups = automaticBackups;
-        this.doAutoRestarts = doAutoRestarts;
+        this.autoBackupOnShutdown = autoBackupOnShutdown;
+        this.autoRestartOnShutdown = autoRestartOnShutdown;
     }
 
+    /**
+     * Create a {@link ProcessBuilder} and fill it with start parameters to start this server. Also redirects the output of the server
+     * 
+     * @return {@link ProcessBuilder} containing all start parameter of this server
+     * @throws Exception
+     */
     public ProcessBuilder createProcess() throws Exception {
 
         List<String> commands = new ArrayList<>();
@@ -50,6 +79,13 @@ public class ObservedServer {
         return pBuilder;
     }
 
+    /**
+     * Add the start parameters to the list. The order is important, otherwise the server will not start and run correctly. Can be overridden by
+     * inherited classes to add/change/remove parameters
+     * 
+     * @param processCommands
+     *            The list to fill
+     */
     protected void buildCommands(List<String> processCommands) {
 
         processCommands.add("java");
@@ -61,54 +97,83 @@ public class ObservedServer {
         processCommands.add("nogui");
     }
 
+    /**
+     * @return The unique name of the server
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * @return The minimum memory amount for the java heap the server needs.
+     */
     public String getMinMemory() {
         return minMemory;
     }
 
+    /**
+     * @return The maximum memory amount for the java heap the server needs.
+     */
     public String getMaxMemory() {
         return maxMemory;
     }
 
+    /**
+     * @return The server's directory containing all server files like the world or the logs. Will be calculated using {@link #getServerFile()}s
+     *         parent
+     */
     public File getDirectory() {
         return directory;
     }
 
+    /**
+     * @return The executable server file
+     */
     public File getServerFile() {
         return serverFile;
     }
 
+    /**
+     * @return Plain string with additional, not directly by the program covered, vm parameters
+     */
     public String getVmOptions() {
         return vmOptions;
     }
 
-    @JsonGetter
-    public boolean doAutomaticBackups() {
-        return doAutomaticBackups;
+    /**
+     * @return If <code>true</code>, NightWatch will create a backup of the server after server shutdown.
+     */
+    public boolean doAutoBackupOnShutdown() {
+        return autoBackupOnShutdown;
     }
 
-    @JsonGetter
-    public boolean doAutoRestarts() {
-        return doAutoRestarts;
+    /**
+     * @return If <code>true</code>, NightWatch will restart the server after server shutdown.
+     */
+    public boolean doAutoRestartOnShutdown() {
+        return autoRestartOnShutdown;
     }
 
+    /**
+     * Copy all values of the other server to this server. This is by the {@link ServerOptionsDialog} to set and change a server configuration
+     * 
+     * @param other
+     *            The other instance holding the updated values.
+     */
     public void update(ObservedServer other) {
         this.name = other.name;
         this.minMemory = other.minMemory;
         this.maxMemory = other.maxMemory;
         this.serverFile = other.serverFile;
         this.directory = other.directory;
-        this.doAutomaticBackups = other.doAutomaticBackups;
-        this.doAutoRestarts = other.doAutoRestarts;
+        this.autoBackupOnShutdown = other.autoBackupOnShutdown;
+        this.autoRestartOnShutdown = other.autoRestartOnShutdown;
         this.vmOptions = other.vmOptions;
     }
 
     @Override
     public String toString() {
-        return "ObservedServer [name=" + name + ", minMemory=" + minMemory + ", maxMemory=" + maxMemory + ", directory=" + directory + ", serverFile=" + serverFile + ", doAutomaticBackups=" + doAutomaticBackups + ", doAutoRestarts=" + doAutoRestarts + ", vmOptions=" + vmOptions + "]";
+        return "ObservedServer [name=" + name + ", minMemory=" + minMemory + ", maxMemory=" + maxMemory + ", directory=" + directory + ", serverFile=" + serverFile + ", autoBackupOnShutdown=" + autoBackupOnShutdown + ", autoRestartOnShutdown=" + autoRestartOnShutdown + ", vmOptions=" + vmOptions + "]";
     }
 
 }

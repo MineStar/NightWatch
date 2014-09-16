@@ -11,29 +11,39 @@ import com.fasterxml.jackson.core.type.TypeReference;
 
 import de.minestar.nightwatch.core.Core;
 
+/**
+ * Responsible to loading and saving the observed servers. Provides an public observable list to react to changes
+ */
 public class ServerManager {
 
     private ObservableMap<String, ObservedServer> registeredServers;
 
+    // Information for jackson parser to read and write the map directly instead wrapped in a single class
     public static final TypeReference<Map<String, ObservedServer>> SERVER_TYPE = new TypeReference<Map<String, ObservedServer>>() {
     };
 
+    /**
+     * Construct a server manager by parsing the file. If the file does not exists or is empty, the server manager is initially empty
+     * 
+     * @param serversFile
+     *            The file to parse
+     */
     public ServerManager(File serversFile) {
         registeredServers = loadServers(serversFile);
+        // React to server changes and persist them
         registeredServers.addListener((MapChangeListener<String, ObservedServer>) c -> {
             saveServers(serversFile, registeredServers);
         });
     }
 
     private ObservableMap<String, ObservedServer> loadServers(File file) {
-        ObservableMap<String, ObservedServer> result = FXCollections.observableHashMap();
         if (!file.exists() || file.length() == 0L) {
-            return result;
+            return FXCollections.observableHashMap();
         }
 
         try {
-            Map<String, ObservedServer> list = Core.JSON_MAPPER.readValue(file, SERVER_TYPE);
-            return FXCollections.observableMap(list);
+            Map<String, ObservedServer> server = Core.JSON_MAPPER.readValue(file, SERVER_TYPE);
+            return FXCollections.observableMap(server);
         } catch (Exception e) {
             e.printStackTrace();
             return FXCollections.observableHashMap();
@@ -48,6 +58,11 @@ public class ServerManager {
         }
     }
 
+    /**
+     * Currently observed servers. If the map change, the list will be written to the disc
+     * 
+     * @return The current observed servers
+     */
     public ObservableMap<String, ObservedServer> registeredServers() {
         return registeredServers;
     }
