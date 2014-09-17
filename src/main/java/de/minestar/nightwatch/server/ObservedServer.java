@@ -2,6 +2,8 @@ package de.minestar.nightwatch.server;
 
 import java.io.File;
 import java.lang.ProcessBuilder.Redirect;
+import java.time.Duration;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,7 +12,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 
-import de.minestar.nightwatch.gui.dialog.ServerOptionsDialog;
+import de.minestar.nightwatch.gui.dialog.EditServerDialog;
 @JsonTypeInfo(use = Id.CLASS, include = As.PROPERTY, property = "class")
 public class ObservedServer {
 
@@ -23,10 +25,13 @@ public class ObservedServer {
     private boolean autoBackupOnShutdown;
     @JsonProperty
     private boolean autoRestartOnShutdown;
-
+    
     private String minMemory;
     private String maxMemory;
     private String vmOptions;
+
+    private List<LocalTime> restartTimes;
+    private List<Duration> warningIntervals;
 
     protected ObservedServer() {
         // For serialization
@@ -50,7 +55,7 @@ public class ObservedServer {
      * @param autoRestartOnShutdown
      *            If set to <code>true</code> it will automatically restart after a shutdown.
      */
-    public ObservedServer(String name, File serverFile, String minMemory, String maxMemory, String vmOptions, boolean autoBackupOnShutdown, boolean autoRestartOnShutdown) {
+    public ObservedServer(String name, File serverFile, String minMemory, String maxMemory, String vmOptions, boolean autoBackupOnShutdown, boolean autoRestartOnShutdown, List<LocalTime> restartTimes, List<Duration> warningIntervals) {
         this.name = name;
         this.serverFile = serverFile;
         this.directory = serverFile.getParentFile();
@@ -59,6 +64,8 @@ public class ObservedServer {
         this.vmOptions = vmOptions;
         this.autoBackupOnShutdown = autoBackupOnShutdown;
         this.autoRestartOnShutdown = autoRestartOnShutdown;
+        this.restartTimes = restartTimes;
+        this.warningIntervals = warningIntervals;
     }
 
     /**
@@ -155,7 +162,29 @@ public class ObservedServer {
     }
 
     /**
-     * Copy all values of the other server to this server. This is by the {@link ServerOptionsDialog} to set and change a server configuration
+     * @return If <code>true</code>, the server will be stopped and restarted by NightWatch at the {@link #getRestartTimes()}
+     * 
+     */
+    public boolean doAutoRestarts() {
+        return restartTimes != null && !restartTimes.isEmpty();
+    }
+
+    /**
+     * @return The times on the current day (or next, if the time is in the past), where is server will be stopped by NightWatch and restarted
+     */
+    public List<LocalTime> getRestartTimes() {
+        return restartTimes;
+    }
+
+    /**
+     * @return The intervals before the auto restarts to inform the people, when the next auto restart is.
+     */
+    public List<Duration> getWarningIntervals() {
+        return warningIntervals;
+    }
+
+    /**
+     * Copy all values of the other server to this server. This is by the {@link EditServerDialog} to set and change a server configuration
      * 
      * @param other
      *            The other instance holding the updated values.
@@ -169,6 +198,8 @@ public class ObservedServer {
         this.autoBackupOnShutdown = other.autoBackupOnShutdown;
         this.autoRestartOnShutdown = other.autoRestartOnShutdown;
         this.vmOptions = other.vmOptions;
+        this.restartTimes = other.restartTimes;
+        this.warningIntervals = other.warningIntervals;
     }
 
     @Override

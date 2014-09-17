@@ -7,6 +7,7 @@ import javafx.application.Application;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JSR310Module;
 
 import de.minestar.nightwatch.gui.MainGUI;
 import de.minestar.nightwatch.server.ServerManager;
@@ -17,6 +18,7 @@ public class Core {
     static {
         JSON_MAPPER.enable(SerializationFeature.INDENT_OUTPUT);
         JSON_MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        JSON_MAPPER.registerModule(new JSR310Module());
     }
 
     private static final File SERVER_LIST_FILE = new File("servers.json");

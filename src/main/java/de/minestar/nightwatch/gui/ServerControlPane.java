@@ -30,7 +30,7 @@ import de.minestar.nightwatch.core.Core;
 import de.minestar.nightwatch.gui.dialog.BackupDialog;
 import de.minestar.nightwatch.gui.dialog.DialogsUtil;
 import de.minestar.nightwatch.gui.dialog.RestartDialog;
-import de.minestar.nightwatch.gui.dialog.ServerOptionsDialog;
+import de.minestar.nightwatch.gui.dialog.EditServerDialog;
 import de.minestar.nightwatch.server.ObservedServer;
 import de.minestar.nightwatch.threading.BackupTask;
 import de.minestar.nightwatch.threading.RestoreBackupTask;
@@ -261,7 +261,7 @@ public class ServerControlPane extends FlowPane {
 
     private void onOpenServerSettings(ServerLogTab parent) {
         // Start option dialog
-        ServerOptionsDialog dia = new ServerOptionsDialog(MainGUI.stage, parent.getServer());
+        EditServerDialog dia = new EditServerDialog(MainGUI.stage, parent.getServer());
         Optional<ObservedServer> result = dia.startDialog();
         // User has canceled the dialog
         if (!result.isPresent())

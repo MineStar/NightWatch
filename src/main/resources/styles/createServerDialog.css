@@ -1,0 +1,7 @@
+.addTimeButton {
+    -fx-base: #20672b;
+}
+
+.removeTimeButton {
+    -fx-base: #e55852;
+}
