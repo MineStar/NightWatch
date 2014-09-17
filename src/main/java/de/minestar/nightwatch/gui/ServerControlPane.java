@@ -29,9 +29,9 @@ import org.controlsfx.dialog.Dialogs;
 import de.minestar.nightwatch.core.Core;
 import de.minestar.nightwatch.gui.dialog.BackupDialog;
 import de.minestar.nightwatch.gui.dialog.DialogsUtil;
-import de.minestar.nightwatch.gui.dialog.RestartDialog;
 import de.minestar.nightwatch.gui.dialog.EditServerDialog;
-import de.minestar.nightwatch.server.ObservedServer;
+import de.minestar.nightwatch.gui.dialog.RestartDialog;
+import de.minestar.nightwatch.server.ObservedMinecraftServer;
 import de.minestar.nightwatch.threading.BackupTask;
 import de.minestar.nightwatch.threading.RestoreBackupTask;
 
@@ -113,19 +113,19 @@ public class ServerControlPane extends FlowPane {
         serverLogTab.getServerOverWatchThread().isAlive().addListener((observ, oldVal, newVal) -> {
             if (newVal == false) {
                 this.isRunning.set(false);
-                ObservedServer server = serverLogTab.getServer();
-                if (server.doAutoBackupOnShutdown()) {
+                ObservedMinecraftServer server = serverLogTab.getServer();
+                if (server.doBackupOnShutdown()) {
                     BackupTask backupTask = new BackupTask(server, new File(Core.mainConfig.backupFolder().get()));
                     // wait for backup task has ended to initiate eventual
                     // restart
-                    if (server.doAutoRestartOnShutdown()) {
+                    if (server.doRestartOnShutdown()) {
                         backupTask.setOnSucceeded(e -> {
                             // Have to run it synchronous
                             Platform.runLater(() -> initiateRestart(serverLogTab));
                         });
                     }
                     this.startBackup(backupTask);
-                } else if (server.doAutoRestartOnShutdown()) {
+                } else if (server.doRestartOnShutdown()) {
                     initiateRestart(serverLogTab);
 
                 }
@@ -225,7 +225,7 @@ public class ServerControlPane extends FlowPane {
         if (backupFile == null)
             return;
 
-        ObservedServer server = parent.getServer();
+        ObservedMinecraftServer server = parent.getServer();
 
         // Check if the backup was from this server
         if (!backupFile.getName().startsWith(server.getName())) {
@@ -262,13 +262,13 @@ public class ServerControlPane extends FlowPane {
     private void onOpenServerSettings(ServerLogTab parent) {
         // Start option dialog
         EditServerDialog dia = new EditServerDialog(MainGUI.stage, parent.getServer());
-        Optional<ObservedServer> result = dia.startDialog();
+        Optional<ObservedMinecraftServer> result = dia.startDialog();
         // User has canceled the dialog
         if (!result.isPresent())
             return;
 
         // Update the server
-        ObservedServer updatedServer = result.get();
+        ObservedMinecraftServer updatedServer = result.get();
         Core.serverManager.registeredServers().replace(parent.getServer().getName().toLowerCase(), updatedServer);
         parent.getServer().update(updatedServer);
         parent.setText(updatedServer.getName());

@@ -15,16 +15,16 @@ import de.minestar.nightwatch.core.Core;
 import de.minestar.nightwatch.logging.LogLevel;
 import de.minestar.nightwatch.logging.ServerLog;
 import de.minestar.nightwatch.logging.ServerLogEntry;
-import de.minestar.nightwatch.server.ObservedServer;
+import de.minestar.nightwatch.server.ObservedMinecraftServer;
 import de.minestar.nightwatch.threading.ServerOverwatchThread;
 
 public class ServerLogTab extends LogTab {
 
-    private ObservedServer server;
+    private ObservedMinecraftServer server;
     private ServerOverwatchThread serverOverWatchThread;
     private LinkedBlockingQueue<String> commandQueue;
 
-    public ServerLogTab(ObservedServer server) {
+    public ServerLogTab(ObservedMinecraftServer server) {
         super(server.getName(), new ServerLog());
         this.getServerlog().registerSynchronousConsumer((entry) -> {
             if (currentFilter.test(entry)) {
@@ -82,7 +82,7 @@ public class ServerLogTab extends LogTab {
         this.serverOverWatchThread.kill();
     }
 
-    public ObservedServer getServer() {
+    public ObservedMinecraftServer getServer() {
         return server;
     }
 

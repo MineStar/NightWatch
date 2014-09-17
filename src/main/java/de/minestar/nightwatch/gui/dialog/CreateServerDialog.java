@@ -40,8 +40,8 @@ import org.controlsfx.validation.ValidationSupport;
 import org.controlsfx.validation.Validator;
 
 import de.minestar.nightwatch.core.Core;
-import de.minestar.nightwatch.server.ObservedJava7Server;
-import de.minestar.nightwatch.server.ObservedServer;
+import de.minestar.nightwatch.server.ObservedMinecraftServer;
+import de.minestar.nightwatch.server.ObservedMinecraftServer.Builder;
 import de.minestar.nightwatch.util.DurationUtil;
 
 public class CreateServerDialog extends Dialog {
@@ -253,37 +253,46 @@ public class CreateServerDialog extends Dialog {
 
         return tab;
     }
-    public Optional<ObservedServer> startDialog() {
+    public Optional<ObservedMinecraftServer> startDialog() {
 
         Action action = show();
         // Disable the validator
         Actions.OK.disabledProperty().unbind();
         Actions.OK.disabledProperty().set(false);
         if (action == Actions.OK) {
-
-            List<LocalTime> restartTimes = new ArrayList<>();
-            List<Duration> restartWarnings = new ArrayList<>();
-            // When server should do auto restarts, fill the lists
+            // Start constructing server
+            Builder serverBuilder = ObservedMinecraftServer.create(serverName.get(), serverFile.get());
+            // Fill heap information
+            serverBuilder.minHeapSize(minMemory.get()).maxHeapSize(maxMemory.get());
+            // Add other vm options
+            serverBuilder.otherVmOptions(vmOptions.get());
+            // Enable / Disable backup and restart after shutdown
+            serverBuilder.backupAfterShutdown(autoBackup.get()).restartAfterShutdown(autoRestart.get());
+            // Enable / Disable java 7 and set the perm gem size
+            serverBuilder.useJava7(isJava7.get()).maxPermGen(permGenSize.get());
+            // If the do restarts, parse restart times and warnings
             if (doAutoRestarts.get()) {
+                // Parse restarts
+                List<LocalTime> restartTimes = new ArrayList<>();
                 String restartTimesString = this.restartTimes.get();
                 String[] split = restartTimesString.split("[\r\n]+");
                 for (int i = 0; i < split.length; i++) {
                     String time = split[i];
                     restartTimes.add(LocalTime.parse(time));
                 }
+
+                // Parse warnings
+                List<Duration> restartWarnings = new ArrayList<>();
                 String restartWarningsString = this.restartWarnings.get();
                 split = restartWarningsString.split("[\r\n]+");
                 for (int i = 0; i < split.length; i++) {
                     String duration = split[i];
                     restartWarnings.add(DurationUtil.parse(duration));
                 }
+                serverBuilder.restartTimes(restartTimes).warningIntervals(restartWarnings);
             }
 
-            if (this.isJava7.not().get()) {
-                return Optional.of(new ObservedServer(this.serverName.get(), this.serverFile.get(), this.minMemory.get(), this.maxMemory.get(), this.vmOptions.get(), this.autoBackup.get(), this.autoRestart.get(), restartTimes, restartWarnings));
-            } else {
-                return Optional.of(new ObservedJava7Server(this.serverName.get(), this.serverFile.get(), this.minMemory.get(), this.maxMemory.get(), this.vmOptions.get(), this.autoBackup.get(), this.autoRestart.get(), restartTimes, restartWarnings, this.permGenSize.get()));
-            }
+            return Optional.of(serverBuilder.build());
         } else
             return Optional.empty();
     }

@@ -17,7 +17,7 @@ import de.minestar.nightwatch.core.Core;
 import de.minestar.nightwatch.logging.LogLevel;
 import de.minestar.nightwatch.logging.ServerLog;
 import de.minestar.nightwatch.logging.ServerLogEntry;
-import de.minestar.nightwatch.server.ObservedServer;
+import de.minestar.nightwatch.server.ObservedMinecraftServer;
 
 /**
  * Master thread to observe the minecraft server and its status. It will have some sub threads to communicate with the server, the
@@ -28,7 +28,7 @@ public class ServerOverwatchThread extends Task<Void> {
 
     private static final long CHECK_INTERVALL_MS = 100L;
 
-    private ObservedServer server;
+    private ObservedMinecraftServer server;
     private Process serverProcess;
     private ServerCommandTask commandTask;
     private ServerLoggingTask logTask;
@@ -49,7 +49,7 @@ public class ServerOverwatchThread extends Task<Void> {
      * @param commandQueue
      *            The queue to submit commands to the observed server.
      */
-    public ServerOverwatchThread(ObservedServer server, ServerLog serverLog, LinkedBlockingQueue<String> commandQueue) {
+    public ServerOverwatchThread(ObservedMinecraftServer server, ServerLog serverLog, LinkedBlockingQueue<String> commandQueue) {
         this.server = server;
         this.serverLog = serverLog;
         this.commandQueue = commandQueue;

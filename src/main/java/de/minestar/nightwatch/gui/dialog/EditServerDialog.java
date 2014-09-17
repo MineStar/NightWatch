@@ -4,26 +4,27 @@ import java.time.Duration;
 import java.time.LocalTime;
 
 import javafx.stage.Stage;
-import de.minestar.nightwatch.server.ObservedJava7Server;
-import de.minestar.nightwatch.server.ObservedServer;
+import de.minestar.nightwatch.server.ObservedMinecraftServer;
 import de.minestar.nightwatch.util.DurationUtil;
 
 public class EditServerDialog extends CreateServerDialog {
 
-    public EditServerDialog(Stage stage, ObservedServer currentServer) {
+    public EditServerDialog(Stage stage, ObservedMinecraftServer currentServer) {
         super(stage);
-        this.autoBackup.set(currentServer.doAutoBackupOnShutdown());
-        this.autoRestart.set(currentServer.doAutoRestartOnShutdown());
-        this.maxMemory.set(currentServer.getMaxMemory());
-        this.minMemory.set(currentServer.getMinMemory());
 
-        this.isJava7.set(currentServer instanceof ObservedJava7Server);
-        if (this.isJava7.get())
-            this.permGenSize.set(((ObservedJava7Server) currentServer).getPermGenSize());
-
-        this.serverFile.set(currentServer.getServerFile());
         this.serverName.set(currentServer.getName());
-        this.vmOptions.set(currentServer.getVmOptions());
+        this.serverFile.set(currentServer.getServerFile());
+
+        this.autoBackup.set(currentServer.doBackupOnShutdown());
+        this.autoRestart.set(currentServer.doRestartOnShutdown());
+
+        this.minMemory.set(currentServer.getMinHeapSize());
+        this.maxMemory.set(currentServer.getMaxHeapSize());
+
+        this.isJava7.set(currentServer.useJava7());
+        this.permGenSize.set(currentServer.getMaxPermGen());
+
+        this.vmOptions.set(currentServer.getOtherVmOptions());
 
         if (currentServer.doAutoRestarts()) {
             this.doAutoRestarts.set(true);

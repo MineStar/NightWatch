@@ -16,10 +16,10 @@ import de.minestar.nightwatch.core.Core;
  */
 public class ServerManager {
 
-    private ObservableMap<String, ObservedServer> registeredServers;
+    private ObservableMap<String, ObservedMinecraftServer> registeredServers;
 
     // Information for jackson parser to read and write the map directly instead wrapped in a single class
-    public static final TypeReference<Map<String, ObservedServer>> SERVER_TYPE = new TypeReference<Map<String, ObservedServer>>() {
+    public static final TypeReference<Map<String, ObservedMinecraftServer>> SERVER_TYPE = new TypeReference<Map<String, ObservedMinecraftServer>>() {
     };
 
     /**
@@ -31,18 +31,18 @@ public class ServerManager {
     public ServerManager(File serversFile) {
         registeredServers = loadServers(serversFile);
         // React to server changes and persist them
-        registeredServers.addListener((MapChangeListener<String, ObservedServer>) c -> {
+        registeredServers.addListener((MapChangeListener<String, ObservedMinecraftServer>) c -> {
             saveServers(serversFile, registeredServers);
         });
     }
 
-    private ObservableMap<String, ObservedServer> loadServers(File file) {
+    private ObservableMap<String, ObservedMinecraftServer> loadServers(File file) {
         if (!file.exists() || file.length() == 0L) {
             return FXCollections.observableHashMap();
         }
 
         try {
-            Map<String, ObservedServer> server = Core.JSON_MAPPER.readValue(file, SERVER_TYPE);
+            Map<String, ObservedMinecraftServer> server = Core.JSON_MAPPER.readValue(file, SERVER_TYPE);
             return FXCollections.observableMap(server);
         } catch (Exception e) {
             e.printStackTrace();
@@ -50,7 +50,7 @@ public class ServerManager {
         }
     }
 
-    private void saveServers(File file, Map<String, ObservedServer> servers) {
+    private void saveServers(File file, Map<String, ObservedMinecraftServer> servers) {
         try {
             Core.JSON_MAPPER.writerWithType(SERVER_TYPE).writeValue(file, servers);
         } catch (Exception e) {
@@ -63,7 +63,7 @@ public class ServerManager {
      * 
      * @return The current observed servers
      */
-    public ObservableMap<String, ObservedServer> registeredServers() {
+    public ObservableMap<String, ObservedMinecraftServer> registeredServers() {
         return registeredServers;
     }
 

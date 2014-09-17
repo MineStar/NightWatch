@@ -31,7 +31,7 @@ import de.minestar.nightwatch.gui.dialog.GeneralOptionsDialog;
 import de.minestar.nightwatch.logging.LogReader;
 import de.minestar.nightwatch.logging.ServerLog;
 import de.minestar.nightwatch.logging.ServerLogEntry;
-import de.minestar.nightwatch.server.ObservedServer;
+import de.minestar.nightwatch.server.ObservedMinecraftServer;
 
 public class MainGUI extends Application {
 
@@ -145,16 +145,16 @@ public class MainGUI extends Application {
     private void onCreateServer() {
 
         CreateServerDialog dialog = new CreateServerDialog(stage);
-        Optional<ObservedServer> result = dialog.startDialog();
+        Optional<ObservedMinecraftServer> result = dialog.startDialog();
         if (!result.isPresent())
             return;
 
-        ObservedServer server = result.get();
+        ObservedMinecraftServer server = result.get();
         Core.serverManager.registeredServers().put(server.getName().toLowerCase(), server);
         createServerTab(server);
     }
 
-    private void createServerTab(ObservedServer server) {
+    private void createServerTab(ObservedMinecraftServer server) {
         ServerLogTab tab = new ServerLogTab(server);
 
         serverTabPane.getTabs().add(tab);
