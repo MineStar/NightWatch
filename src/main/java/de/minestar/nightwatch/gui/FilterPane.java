@@ -1,8 +1,7 @@
 package de.minestar.nightwatch.gui;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Predicate;
 
 import javafx.beans.InvalidationListener;
@@ -103,7 +102,7 @@ public class FilterPane extends FlowPane {
     }
     public class LogFilter implements Predicate<ServerLogEntry>, ObservableValue<LogFilter> {
 
-        private List<ChangeListener<? super LogFilter>> observers;
+        private LinkedBlockingQueue<ChangeListener<? super LogFilter>> observers;
 
         private Predicate<ServerLogEntry> fromDateFilter;
         private Predicate<ServerLogEntry> toDateFilter;
@@ -112,7 +111,7 @@ public class FilterPane extends FlowPane {
 
         public LogFilter() {
             fromDateFilter = toDateFilter = containsTextFilter = minimumLevelFilter = (p) -> true;
-            observers = new ArrayList<>();
+            observers = new LinkedBlockingQueue<>();
         }
 
         public void setFromDateFilter(Predicate<ServerLogEntry> fromDateFilter) {
