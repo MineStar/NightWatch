@@ -4,6 +4,7 @@ import java.io.File;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 import javafx.application.Application;
@@ -37,7 +38,7 @@ public class MainGUI extends Application {
 
     private static final String APPLICATION_ICON = "/icons/minestar_logo_32.png";
 
-    public static final DateTimeFormatter GERMAN_FORMAT = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM);
+    public static final DateTimeFormatter GERMAN_FORMAT = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM).withLocale(Locale.GERMAN);
 
     private TabPane serverTabPane;
     private LogTab currentSelectedTab;
