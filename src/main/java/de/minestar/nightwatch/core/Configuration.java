@@ -9,8 +9,19 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
 
+/**
+ * The central configuration for the application
+ */
 public class Configuration {
 
+    /**
+     * Construct a configuration parsing the given file. If the file does not exists, a default configuration will be returned.
+     * 
+     * @param configFile
+     *            Configuration file
+     * @return Configuration with parsed attributes if the file exists, otherwise a default configuration is returned,
+     * @throws Exception
+     */
     public static Configuration create(File configFile) throws Exception {
         Configuration result;
         if (configFile.exists() && configFile.length() != 0L) {
@@ -48,7 +59,7 @@ public class Configuration {
     private Configuration() {
         defaultValues();
     }
-    
+
     // ********************************
     // * ADD HERE THE DEFAULT VALUES **
     // ********************************
@@ -65,6 +76,9 @@ public class Configuration {
     private SimpleStringProperty java7Path = new SimpleStringProperty();
 
     @JsonGetter
+    /**
+     * @return The path to the java  7 executable
+     */
     public SimpleStringProperty java7Path() {
         return java7Path;
     }
@@ -72,6 +86,9 @@ public class Configuration {
     private SimpleStringProperty backupFolder = new SimpleStringProperty();
 
     @JsonGetter
+    /**
+     * @return The path to the backup folder
+     */
     public SimpleStringProperty backupFolder() {
         return backupFolder;
     }
@@ -79,6 +96,9 @@ public class Configuration {
     private SimpleIntegerProperty restartDelay = new SimpleIntegerProperty();
 
     @JsonGetter
+    /**
+     * @return The time a user can interrupt the automatic restart
+     */
     public SimpleIntegerProperty restartDelay() {
         return restartDelay;
     }
@@ -86,6 +106,9 @@ public class Configuration {
     private SimpleIntegerProperty backupDelay = new SimpleIntegerProperty();
 
     @JsonGetter
+    /**
+     * @return The time a user can interrupt the automatic backup
+     */
     public SimpleIntegerProperty backupDelay() {
         return backupDelay;
     }

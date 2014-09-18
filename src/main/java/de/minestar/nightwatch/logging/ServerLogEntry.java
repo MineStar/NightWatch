@@ -2,6 +2,10 @@ package de.minestar.nightwatch.logging;
 
 import java.time.LocalDateTime;
 
+/**
+ * Represents an instant of a server log containing a message, a time stamp, a source if possible and a log level.
+ * 
+ */
 public class ServerLogEntry {
 
     private final LocalDateTime time;
@@ -16,25 +20,30 @@ public class ServerLogEntry {
         this.text = text;
     }
 
-    public ServerLogEntry(LocalDateTime time, String source, String logLevel, String text) {
-        this.time = time;
-        this.source = source;
-        this.logLevel = LogLevel.getByName(logLevel);
-        this.text = text;
-    }
-
+    /**
+     * @return The message of the log
+     */
     public String getText() {
         return text;
     }
 
+    /**
+     * @return The time stamp of this log entry
+     */
     public LocalDateTime getTime() {
         return time;
     }
 
+    /**
+     * @return The source of the message, for example the server thread or the mod / plugin
+     */
     public String getSource() {
         return source;
     }
 
+    /**
+     * @return The severity of the message
+     */
     public LogLevel getLogLevel() {
         return logLevel;
     }
