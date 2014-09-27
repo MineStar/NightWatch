@@ -67,7 +67,7 @@ public class MainGUI extends Application {
         stage.setOnCloseRequest(e -> {
             // Prevent closing server manager while one or more server are
             // running
-            if (Core.runningServers > 0) {
+            if (Core.serverManager.areSeverRunning()) {
                 DialogsUtil.createOkCancelDialog("Can't close progam while servers are running!").showWarning();
                 e.consume();
             } else {

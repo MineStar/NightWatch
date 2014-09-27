@@ -10,6 +10,7 @@ import javafx.collections.ObservableMap;
 import com.fasterxml.jackson.core.type.TypeReference;
 
 import de.minestar.nightwatch.core.Core;
+import de.minestar.nightwatch.util.Counter;
 
 /**
  * Responsible to loading and saving the observed servers. Provides an public observable list to react to changes
@@ -21,6 +22,11 @@ public class ServerManager {
     // Information for jackson parser to read and write the map directly instead wrapped in a single class
     public static final TypeReference<Map<String, ObservedMinecraftServer>> SERVER_TYPE = new TypeReference<Map<String, ObservedMinecraftServer>>() {
     };
+
+    /**
+     * The amount of currently running servers
+     */
+    private Counter runningServers = new Counter();
 
     /**
      * Construct a server manager by parsing the file. If the file does not exists or is empty, the server manager is initially empty
@@ -65,6 +71,14 @@ public class ServerManager {
      */
     public ObservableMap<String, ObservedMinecraftServer> registeredServers() {
         return registeredServers;
+    }
+
+    public boolean areSeverRunning() {
+        return this.runningServers.get() > 0;
+    }
+
+    public Counter getRunningServers() {
+        return runningServers;
     }
 
 }

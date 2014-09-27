@@ -50,11 +50,6 @@ public class Core {
      */
     public static Configuration mainConfig;
 
-    /**
-     * The amount of currently running servers
-     */
-    public static int runningServers = 0;
-
     static {
         // Initialize all final objects
         serverManager = new ServerManager(SERVER_LIST_FILE);

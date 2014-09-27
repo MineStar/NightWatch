@@ -105,9 +105,10 @@ public class ServerOverwatchThread extends Task<Void> {
         commandTaskThread.start();
 
         // As long servers are running, the GUI cannot be closed by the server.
-        Core.runningServers = Core.runningServers + 1;
+        Core.serverManager.getRunningServers().increment();
         Platform.runLater(() -> this.isAlive.set(true));
     }
+
     private void startAutoRestartTask() {
         List<LocalTime> restartTimes = server.getRestartTimes();
         // Do auto restarts without having restart times? Don't play with the sheriff!
@@ -155,7 +156,7 @@ public class ServerOverwatchThread extends Task<Void> {
             this.restartTask.ifPresent(e -> e.cancel(true));
 
             Platform.runLater(() -> isAlive.set(false));
-            Core.runningServers = Core.runningServers - 1;
+            Core.serverManager.getRunningServers().decrement();
             this.cancel();
         }
     }
