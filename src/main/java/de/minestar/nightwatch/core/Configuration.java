@@ -3,11 +3,11 @@ package de.minestar.nightwatch.core;
 import java.io.File;
 import java.lang.reflect.Field;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
-
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
+
+import com.fasterxml.jackson.annotation.JsonGetter;
 
 /**
  * The central configuration for the application
@@ -48,7 +48,8 @@ public class Configuration {
                     try {
                         Core.JSON_MAPPER.writeValue(configFile, config);
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        Core.logger.error("Can't persist configuration while changing attribute {}", field.getName());
+                        Core.logger.catching(e);
                     }
                 });
             }

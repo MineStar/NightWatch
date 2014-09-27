@@ -138,7 +138,8 @@ public class MainGUI extends Application {
             serverTabPane.getTabs().add(newTab);
             serverTabPane.getSelectionModel().select(newTab);
         } catch (Exception e) {
-            e.printStackTrace();
+            Core.logger.error("Opening log file {}", logFile.toString());
+            Core.logger.catching(e);
         }
 
     }

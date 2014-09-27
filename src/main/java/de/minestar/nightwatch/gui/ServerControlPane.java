@@ -116,6 +116,10 @@ public class ServerControlPane extends FlowPane {
                 ObservedMinecraftServer server = serverLogTab.getServer();
                 if (server.doBackupOnShutdown()) {
                     BackupTask backupTask = new BackupTask(server, new File(Core.mainConfig.backupFolder().get()));
+                    backupTask.exceptionProperty().addListener((observable, oldValue, newValue) -> {
+                        Core.logger.error("Backup for {} failed!", server.getName());
+                        Core.logger.catching(newValue);
+                    });
                     // wait for backup task has ended to initiate eventual
                     // restart
                     if (server.doRestartOnShutdown()) {
@@ -124,7 +128,7 @@ public class ServerControlPane extends FlowPane {
                             Platform.runLater(() -> initiateRestart(serverLogTab));
                         });
                     }
-                    this.startBackup(backupTask);
+                    this.startBackup(backupTask, server.getName());
                 } else if (server.doRestartOnShutdown()) {
                     initiateRestart(serverLogTab);
 
@@ -164,7 +168,8 @@ public class ServerControlPane extends FlowPane {
             try {
                 Desktop.getDesktop().open(parent.getServer().getDirectory());
             } catch (Exception e) {
-                e.printStackTrace();
+                Core.logger.error("Opening directory of server {}", parent.getServer().getName());
+                Core.logger.catching(e);
             }
         });
 
@@ -203,13 +208,15 @@ public class ServerControlPane extends FlowPane {
         }
 
         BackupTask backupTask = new BackupTask(parent.getServer(), new File(Core.mainConfig.backupFolder().get()));
-        startBackup(backupTask);
+        startBackup(backupTask, parent.getServer().getName());
 
     }
-    private void startBackup(BackupTask backupTask) {
+    private void startBackup(BackupTask backupTask, String serverName) {
         BackupDialog dialog = new BackupDialog(MainGUI.stage, backupTask);
         backupTask.exceptionProperty().addListener((observ, oldVal, newVal) -> {
             Dialogs.create().style(DialogStyle.NATIVE).message("Error while creating backup!").showException(newVal);
+            Core.logger.error("Back of server {} failed", serverName);
+            Core.logger.catching(newVal);
         });
         dialog.show();
     }
@@ -237,8 +244,13 @@ public class ServerControlPane extends FlowPane {
 
         // Start restoration of backup
         RestoreBackupTask restoreBackupTask = new RestoreBackupTask(server.getDirectory(), backupFile);
+
         Dialogs.create().style(DialogStyle.NATIVE).showWorkerProgress(restoreBackupTask);
-        restoreBackupTask.exceptionProperty().addListener((observ, oldVal, newVal) -> Dialogs.create().style(DialogStyle.NATIVE).message("Error while restoring backup!").showException(newVal));
+        restoreBackupTask.exceptionProperty().addListener((observ, oldVal, newVal) -> {
+            Dialogs.create().style(DialogStyle.NATIVE).message("Error while restoring backup!").showException(newVal);
+            Core.logger.error("Restore backup from file {} for sever {} failed", backupFile.toString(), server.getName());
+            Core.logger.catching(newVal);
+        });
 
         Thread restoreBackupThread = new Thread(restoreBackupTask, "RestoreBackupThread");
         restoreBackupThread.start();

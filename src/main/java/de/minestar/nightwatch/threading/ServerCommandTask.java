@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import javafx.concurrent.Task;
+import de.minestar.nightwatch.core.Core;
 
 public class ServerCommandTask extends Task<Void> {
 
@@ -39,6 +40,7 @@ public class ServerCommandTask extends Task<Void> {
         this.commandBuffer.clear();
         this.commandQueue.drainTo(commandBuffer);
         for (String command : commandBuffer) {
+            Core.logger.debug(command);
             serverInput.write(command);
             serverInput.newLine();
             serverInput.flush();
@@ -49,8 +51,7 @@ public class ServerCommandTask extends Task<Void> {
     protected void cancelled() {
         try {
             serverInput.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (IOException ignore) {
         }
     }
 

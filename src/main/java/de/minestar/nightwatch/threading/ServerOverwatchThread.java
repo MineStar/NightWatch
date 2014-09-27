@@ -78,10 +78,19 @@ public class ServerOverwatchThread extends Task<Void> {
 
         // Task for reading the output of the server
         this.logTask = new ServerLoggingTask(serverProcess.getInputStream(), serverLog);
+        logTask.exceptionProperty().addListener((observ, oldVal, newVal) -> {
+            Core.logger.error("Reading server output from {} failed", server.getName());
+            Core.logger.catching(newVal);
+        });
+
         Thread loggingTaskThread = new Thread(logTask, this.server.getName() + "_LoggingTask");
 
         // Task for writing into the input of the server and add ability to submit commands
         this.commandTask = new ServerCommandTask(serverProcess.getOutputStream(), commandQueue);
+        commandTask.exceptionProperty().addListener((observ, oldVal, newVal) -> {
+            Core.logger.error("Write commands to server {} failed", server.getName());
+            Core.logger.catching(newVal);
+        });
         Thread commandTaskThread = new Thread(commandTask, this.server.getName() + "_CommandTask");
 
         // If the server is doing automatic restarts on a certain, given interval, it will also creates a third thread to sleep until restart and run
@@ -99,7 +108,6 @@ public class ServerOverwatchThread extends Task<Void> {
         Core.runningServers = Core.runningServers + 1;
         Platform.runLater(() -> this.isAlive.set(true));
     }
-
     private void startAutoRestartTask() {
         List<LocalTime> restartTimes = server.getRestartTimes();
         // Do auto restarts without having restart times? Don't play with the sheriff!
@@ -128,6 +136,11 @@ public class ServerOverwatchThread extends Task<Void> {
         }
 
         AutoRestartTask autoRestartTask = new AutoRestartTask(closestRestartTime, server.getWarningIntervals(), this.commandQueue);
+        // Add exception handler
+        autoRestartTask.exceptionProperty().addListener((observ, oldVal, newVal) -> {
+            Core.logger.error("Autorestart for {} failed", server.getName());
+            Core.logger.catching(newVal);
+        });
         this.restartTask = Optional.of(autoRestartTask);
         Thread autoRestartThread = new Thread(autoRestartTask, server.getName() + "_AutoRestartThread");
         autoRestartThread.start();

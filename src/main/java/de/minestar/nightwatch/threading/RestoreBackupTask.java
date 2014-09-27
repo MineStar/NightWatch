@@ -13,6 +13,7 @@ import java.util.zip.ZipFile;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.concurrent.Task;
+import de.minestar.nightwatch.core.Core;
 import de.minestar.nightwatch.util.Counter;
 import de.minestar.nightwatch.util.DirectoryRemoveVisitor;
 import de.minestar.nightwatch.util.FileCountVisitor;
@@ -29,6 +30,7 @@ public class RestoreBackupTask extends Task<Void> {
 
     @Override
     protected Void call() throws Exception {
+        Core.logger.info("Start restoring backup from file {} to directory {}", backupFile.toString(), directory.toString());
 
         updateMessage("Counting files");
         int count = FileCountVisitor.count(directory);
@@ -66,6 +68,7 @@ public class RestoreBackupTask extends Task<Void> {
         }
         zipFile.close();
         updateMessage("Finished");
+        Core.logger.info("Finished restoring backup from file {} to {}", backupFile.toString(), directory.toString());
         return null;
     }
 }

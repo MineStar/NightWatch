@@ -4,6 +4,9 @@ import java.io.File;
 
 import javafx.application.Application;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -28,6 +31,11 @@ public class Core {
         JSON_MAPPER.registerModule(new JSR310Module());
     }
 
+    /**
+     * Logger for NightWatch project using Log4J2 from Apache
+     */
+    public static final Logger logger = LogManager.getLogger("NightWatch");
+
     private static final File SERVER_LIST_FILE = new File("servers.json");
     /**
      * Hold all registered servers and responsible for persisting changes
@@ -35,8 +43,16 @@ public class Core {
     public static final ServerManager serverManager;
 
     private static final File MAIN_CONFIG_FILE = new File("mainConfig.json");
+
+    /**
+     * The configuration for NightWatch application containing all global properties. Changing an attribute of it will write the configuration to
+     * disc.
+     */
     public static Configuration mainConfig;
 
+    /**
+     * The amount of currently running servers
+     */
     public static int runningServers = 0;
 
     static {
@@ -45,13 +61,13 @@ public class Core {
         try {
             mainConfig = Configuration.create(MAIN_CONFIG_FILE);
         } catch (Exception e) {
-            System.err.println("Error while loading main config: ");
-            e.printStackTrace();
+            logger.error("Can't load configuration", e);
         }
     }
 
     public static void main(String[] args) {
-
+        logger.info("Starting application");
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> logger.info("Stopping application")));
         Application.launch(MainGUI.class, args);
     }
 

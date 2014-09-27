@@ -7,6 +7,7 @@ import java.time.format.DateTimeFormatter;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.concurrent.Task;
+import de.minestar.nightwatch.core.Core;
 import de.minestar.nightwatch.server.ObservedMinecraftServer;
 import de.minestar.nightwatch.util.FileCountVisitor;
 import de.minestar.nightwatch.util.ZipFileVisitor;
@@ -26,6 +27,7 @@ public class BackupTask extends Task<Void> {
     @Override
     protected Void call() throws Exception {
 
+        Core.logger.info("Start backup of {}", server.getName());
         File source = server.getDirectory();
 
         updateMessage("Count Files");
@@ -47,7 +49,7 @@ public class BackupTask extends Task<Void> {
         ZipFileVisitor.zipDirWithProgress(source, targetFile, procededFiles);
         targetFile.renameTo(new File(backupDirectory, fileName + ".zip"));
         updateMessage("Backup complete");
-
+        Core.logger.info("Finished backup of {}", server.getName());
         return null;
     }
 }

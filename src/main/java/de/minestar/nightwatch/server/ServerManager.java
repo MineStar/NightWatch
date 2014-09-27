@@ -45,19 +45,19 @@ public class ServerManager {
             Map<String, ObservedMinecraftServer> server = Core.JSON_MAPPER.readValue(file, SERVER_TYPE);
             return FXCollections.observableMap(server);
         } catch (Exception e) {
-            e.printStackTrace();
+            Core.logger.error("Loading and parsing servers from file {}", file.toString());
+            Core.logger.catching(e);
             return FXCollections.observableHashMap();
         }
     }
-
     private void saveServers(File file, Map<String, ObservedMinecraftServer> servers) {
         try {
             Core.JSON_MAPPER.writerWithType(SERVER_TYPE).writeValue(file, servers);
         } catch (Exception e) {
-            e.printStackTrace();
+            Core.logger.error("Save servers to file {}", file.toString());
+            Core.logger.catching(e);
         }
     }
-
     /**
      * Currently observed servers. If the map change, the list will be written to the disc
      * 
