@@ -46,7 +46,11 @@ public class AutoRestartTask extends Task<Void> {
             updateMessage("Sleep for Warning " + DurationUtil.format(sleepDuration));
 
             // Sleep until the warning time
-            Thread.sleep(sleepTime);
+            try {
+                Thread.sleep(sleepTime);
+            } catch (InterruptedException ignore) {
+                // Only called when auto restart thread is canceled
+            }
             printMessageOnServer("Automatic restart in " + DurationUtil.format(restartWarning));
         }
         // Every warning was printed
@@ -56,7 +60,12 @@ public class AutoRestartTask extends Task<Void> {
         updateProgress(++progress, max);
         updateMessage("Sleep for Restart " + DurationUtil.format(sleepDuration));
         // Sleep until the restart
-        Thread.sleep(sleepDuration.toMillis());
+        // Sleep until the warning time
+        try {
+            Thread.sleep(sleepDuration.toMillis());
+        } catch (InterruptedException ignore) {
+            // Only called when auto restart thread is canceled
+        }
         // Initiate the restart
         printMessageOnServer("Restart the server");
         commandQueue.add(INITIATE_RESTART_COMMAND);

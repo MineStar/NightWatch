@@ -13,6 +13,7 @@ import de.minestar.nightwatch.core.Core;
 
 public class ServerCommandTask extends Task<Void> {
 
+    private static final int CHECK_INTERVAL = 50;
     private LinkedBlockingQueue<String> commandQueue;
     private List<String> commandBuffer;
     private BufferedWriter serverInput;
@@ -30,7 +31,11 @@ public class ServerCommandTask extends Task<Void> {
     @Override
     protected Void call() throws Exception {
         while (!isCancelled()) {
-            Thread.sleep(50);
+            try {
+                Thread.sleep(CHECK_INTERVAL);
+            } catch (InterruptedException ignore) {
+                // Only called, when thread is canceled while sleeping
+            }
             flush();
         }
         return null;

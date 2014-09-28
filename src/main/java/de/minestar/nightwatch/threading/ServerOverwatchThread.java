@@ -61,7 +61,11 @@ public class ServerOverwatchThread extends Task<Void> {
         start();
         while (!isCancelled()) {
             overwatch();
-            Thread.sleep(CHECK_INTERVALL_MS);
+            try {
+                Thread.sleep(CHECK_INTERVALL_MS);
+            } catch (InterruptedException ignore) {
+                // Called when the main thread is interrupted
+            }
         }
         return null;
     }
