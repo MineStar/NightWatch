@@ -67,22 +67,30 @@ public class MainGUI extends Application {
         stage.setOnCloseRequest(e -> {
             // Prevent closing server manager while one or more server are
             // running
-            if (Core.serverManager.areSeverRunning()) {
-                DialogsUtil.createOkCancelDialog("Can't close progam while servers are running!").showWarning();
+            if (!closeApp())
                 e.consume();
-            } else {
-                // Ask if the user really want to close the server
-                Dialogs dialog = DialogsUtil.createOkCancelDialog("Exit program?");
-                if (dialog.showConfirm() != Actions.OK) {
-                    e.consume();
-                }
-            }
+
         });
         stage.setScene(scene);
         stage.setWidth(900);
         stage.setHeight(800);
         stage.show();
         MainGUI.stage = stage;
+    }
+
+    private boolean closeApp() {
+        if (Core.serverManager.areSeverRunning()) {
+            DialogsUtil.createOkCancelDialog("Can't close progam while servers are running!").showWarning();
+            return false;
+        } else {
+            // Ask if the user really want to close the server
+            Dialogs dialog = DialogsUtil.createOkCancelDialog("Exit program?");
+            if (dialog.showConfirm() != Actions.OK) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private MenuBar createMenuBar() {
@@ -102,6 +110,11 @@ public class MainGUI extends Application {
 
         MenuItem closeMenu = new MenuItem("Exit");
         closeMenu.setAccelerator(KeyCombination.keyCombination("ALT+F4"));
+        closeMenu.setOnAction(e -> {
+            if (closeApp())
+                stage.close();
+        });
+
         fileMenu.getItems().addAll(createServerMenu, openLogMenu, optionsMenu, closeMenu);
 
         Menu helpMenu = new Menu("Help");
