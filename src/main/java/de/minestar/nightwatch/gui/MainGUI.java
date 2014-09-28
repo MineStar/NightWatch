@@ -23,6 +23,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import org.controlsfx.dialog.Dialog.Actions;
+import org.controlsfx.dialog.DialogStyle;
 import org.controlsfx.dialog.Dialogs;
 
 import de.minestar.nightwatch.core.Core;
@@ -121,12 +122,19 @@ public class MainGUI extends Application {
 
         MenuItem aboutMenuItem = new MenuItem("About");
         aboutMenuItem.setAccelerator(KeyCombination.keyCombination("F1"));
+        aboutMenuItem.setOnAction(e -> onAboutAction());
         helpMenu.getItems().add(aboutMenuItem);
 
         menuBar.getMenus().addAll(fileMenu, helpMenu);
 
         return menuBar;
 
+    }
+
+    private void onAboutAction() {
+        String message = "NightWatch" + System.lineSeparator() + System.lineSeparator() + "A server manager programm" + System.lineSeparator() + "© by Minestar";
+        Dialogs dia = Dialogs.create().actions(Actions.OK).style(DialogStyle.NATIVE).title("About").message(message);
+        dia.showInformation();
     }
 
     private void onOpenOption() {
