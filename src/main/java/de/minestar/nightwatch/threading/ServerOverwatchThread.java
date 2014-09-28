@@ -155,6 +155,7 @@ public class ServerOverwatchThread extends Task<Void> {
         if (serverProcess.isAlive()) {
             return;
         } else {
+            Core.logger.info("Server {} stopped, initiate post shutdown sequence", server.getName());
             this.logTask.cancel();
             this.commandTask.cancel();
             this.restartTask.ifPresent(e -> e.cancel(true));
